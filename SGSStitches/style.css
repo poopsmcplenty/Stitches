@@ -1,0 +1,337 @@
+body {
+  margin: 0;
+  padding: 12px;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #18181b;
+  color: #efeff1;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center; /* Centers the panel preview in Chrome */
+}
+
+.container {
+  width: 100%;
+  max-width: 318px; /* Strict Twitch panel width */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #a970ff;
+}
+
+#status {
+  font-size: 0.75rem;
+  color: #adadb8;
+}
+
+.counter-box {
+  text-align: center;
+}
+
+#score {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #00f0ff;
+}
+
+.sub-label {
+  font-size: 0.8rem;
+  color: #adadb8;
+}
+
+.main-btn {
+  background-color: #9146ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  display: block;      /* Needed for auto margins to center */
+  margin: 6px auto;   /* Centers the button horizontally */
+}
+
+.main-btn:hover:not(:disabled) {
+  background-color: #772ce8;
+}
+
+.main-btn:disabled, .shop-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+#click-btn {
+  width: 40%; /* Or an exact size like 220px */
+}
+
+/* Nav Bar */
+.nav-bar {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.nav-btn {
+  flex: 1;
+  background-color: #2f2f35;
+  color: #efeff1;
+  border: 1px solid #46464f;
+  border-radius: 4px;
+  padding: 6px 0;
+  font-size: 0.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+}
+
+.nav-btn:hover {
+  background-color: #3f3f46;
+  border-color: #9146ff;
+}
+
+.nav-btn.active {
+  background-color: #9146ff;
+  border-color: #a970ff;
+}
+
+/* Tabs */
+.tab-content {
+  display: none;
+  width: 100%;
+  margin-top: 10px;
+  border-top: 1px solid #2f2f35;
+  padding-top: 8px;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.tab-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 0.95rem;
+  color: #dedee3;
+
+}
+
+/* Shop Items */
+.shop-btn, .crafting-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #26262c;
+  color: #efeff1;
+  border: 1px solid #3a3a44;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+/* Shop Button Hover Highlight */
+.shop-btn {
+  cursor: pointer;
+}
+
+.shop-btn:hover {
+  background-color: #3c2a61 !important; /* Rich purple background */
+  border-color: #a970ff !important;     /* Bright border */
+  box-shadow: 0 0 12px rgba(169, 112, 255, 0.6) !important; /* Glowing aura */
+  cursor: pointer !important;
+}
+
+.crafting-item {
+  cursor: default;
+}
+
+.craft-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.craft-info strong {
+  color: #00f0ff;
+}
+
+.craft-info small {
+  color: #adadb8;
+  font-size: 0.7rem;
+}
+
+.craft-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.craft-qty-input {
+  width: 40px;
+  background-color: #18181b;
+  border: 1px solid #3a3a44;
+  border-radius: 4px;
+  color: white;
+  padding: 4px;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.craft-btn {
+  background-color: #00f0ff;
+  color: #18181b;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.craft-btn:hover:not(:disabled) {
+  background-color: #00c0cc;
+}
+
+.craft-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.inventory-section {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #adadb8;
+}
+
+/* Notions Slots */
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin: 10px 0;
+}
+
+.slot {
+  aspect-ratio: 1;
+  background: #1f1f23;
+  border: 2px dashed #46464f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  color: #adadb8;
+  cursor: pointer;
+  text-align: center;
+  padding: 2px;
+}
+
+.slot.bronze { border-color: #cd7f32; color: #cd7f32; }
+.slot.silver { border-color: #c0c0c0; color: #c0c0c0; }
+.slot.gold { border-color: #ffd700; color: #ffd700; }
+
+#owned-notions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Menu Tab & Stats */
+#quit-btn:hover {
+  background-color: #cc3333 !important;
+}
+.save-action-btn {
+  background-color: #00aa5b;
+  margin-bottom: 12px;
+}
+
+.save-action-btn:hover {
+  background-color: #008748;
+}
+
+.menu-section {
+  width: 100%;
+  background-color: #1f1f23;
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.menu-section h4 {
+  margin: 0 0 6px 0;
+  font-size: 0.85rem;
+  color: #adadb8;
+  border-bottom: 1px solid #2f2f35;
+  padding-bottom: 4px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+}
+
+.placeholder-text {
+  font-size: 0.85rem;
+  color: #adadb8;
+  text-align: center;
+}
+/* Crafting Timer & Progress Bar */
+.craft-progress-container {
+  width: 100%;
+  height: 6px;
+  background-color: #18181b;
+  border-radius: 3px;
+  margin-top: 6px;
+  overflow: hidden;
+  display: none; /* hidden until crafting */
+}
+
+.craft-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #9146ff, #00f0ff);
+  transition: width 0.5s linear;
+}
+
+.craft-timer-text {
+  font-size: 0.7rem;
+  color: #00f0ff;
+  margin-top: 2px;
+  display: none;
+}
+
+/* Floating Click Numbers */
+.floating-click {
+  position: fixed;
+  pointer-events: none;
+  color: #00f0ff;
+  font-weight: bold;
+  font-size: 1.1rem;
+  z-index: 9999;
+  user-select: none;
+  animation: floatUpFade 0.8s ease-out forwards;
+}
+
+@keyframes floatUpFade {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -40px) scale(1.2);
+  }
+}

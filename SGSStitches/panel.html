@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Incremental Stream Game</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script type="module">
+    import { firebaseConfig } from './config.js';
+    window.firebaseConfig = firebaseConfig;
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h2>Stitches</h2>
+    <div id="status">Connecting...</div>
+    <div id="game-notify" style="font-size: 0.75rem; color: #00ff88; opacity: 0; transition: opacity 0.4s;">Notification</div>
+
+    <div class="counter-box">
+      <div id="join-container" style="display:none;">
+        <button id="join-btn" class="main-btn">Join Game</button>
+      </div>
+      <div id="game-ui" style="display: none;">
+        <span id="score">0</span>
+        <div class="sub-label"><span id="pps">1</span> Stitches / sec</div>
+      </div>
+    </div>
+
+    <button id="click-btn" class="main-btn" disabled>Click (+1)</button>
+
+    <div class="nav-bar">
+      <button id="nav-notions" class="nav-btn active">Notions</button>
+      <button id="nav-crafting" class="nav-btn">Crafting</button>
+      <button id="nav-shop" class="nav-btn">Shop</button>
+      <button id="nav-menu" class="nav-btn">Menu</button>
+    </div>
+    <div id="tab-notions" class="tab-content" style="display:block;">
+      <h3><span id="notions-title">Your</span> Notions</h3>
+      <div class="slots-container">
+        <h4>Equipped Notions</h4>
+        <div class="slots-grid">
+          <div class="slot bronze" data-type="bronze">Bronze</div>
+          <div class="slot bronze" data-type="bronze">Bronze</div>
+          <div class="slot silver" data-type="silver">Silver</div>
+          <div class="slot gold" data-type="gold">Gold</div>
+        </div>
+      </div>
+      <div class="inventory-section">
+        <h4>Owned Notions</h4>
+        <div id="owned-notions-list"></div>
+      </div>
+    </div>
+
+    <div id="tab-shop" class="tab-content" style="display:none;">
+      <h3>Machines & Equipment</h3>
+      <div id="shop-items-container"></div>
+    </div>
+
+    <div id="tab-crafting" class="tab-content" style="display:none;">
+      <h3>Crafting Recipes</h3>
+      <div id="crafting-items-container"></div>
+    </div>
+
+    <div id="tab-menu" class="tab-content" style="display:none;">
+      <h3>Menu & Settings</h3>
+      <div class="menu-section">
+        <button id="quit-btn" class="main-btn" style="background-color: #ff4444; margin-bottom: 5px;">Quit Game</button>
+        <button id="manual-save-btn" class="main-btn save-action-btn">Save Game</button>
+      </div>
+      <div class="menu-section">
+        <h4>Stats</h4>
+        <div class="stat-row"><span>Player ID:</span> <span id="stat-user">Loading...</span></div>
+        <div class="stat-row"><span>Current SPM:</span> <span id="stat-total-spm">1</span></div>
+        <div class="stat-row"><span>Total Stitches:</span> <span id="stat-total-stitches">0</span></div>
+      </div>
+    </div>
+  </div>
+<script src="gameData.js"></script>
+  <script src="panel.js"></script>
+</body>
+</html>
