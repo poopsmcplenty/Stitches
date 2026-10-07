@@ -15,21 +15,35 @@
 </head>
 <body>
   <div class="container">
-    <h2>Stitches</h2>
-    <div id="status">Connecting...</div>
+    <!-- <div id="status">Connecting...</div> --> 
     <div id="game-notify" style="font-size: 0.75rem; color: #00ff88; opacity: 0; transition: opacity 0.4s;">Notification</div>
-
-    <div class="counter-box">
-      <div id="join-container" style="display:none;">
-        <button id="join-btn" class="main-btn">Join Game</button>
+  <!-- 3-Column Top Header: Machines | Center Stack | Inventory -->
+    <div class="header-hud-row">
+      <!-- Left: Machines -->
+      <div class="hud-box">
+        <h6>Machines</h6>
+        <div id="hud-machines-list"></div>
       </div>
-      <div id="game-ui" style="display: none;">
-        <span id="score">0</span>
-        <div class="sub-label"><span id="pps">1</span> Stitches / sec</div>
+
+      <!-- Center Stack: Title, Score, Clicker -->
+      <div class="hud-center-stack">
+        <h2>Stitches</h2>
+        <div id="join-container" style="display:none;">
+          <button id="join-btn" class="main-btn">Join Game</button>
+        </div>
+        <div id="game-ui" style="display: none;">
+          <div id="score">0</div>
+          <div class="sub-label"><span id="pps">1</span> Stitches / sec</div>
+        </div>
+        <button id="click-btn" class="main-btn" disabled>Click (+1)</button>
+      </div>
+
+      <!-- Right: Inventory -->
+      <div class="hud-box">
+        <h6>Crafted Items</h6>
+        <div id="hud-inventory-list"></div>
       </div>
     </div>
-
-    <button id="click-btn" class="main-btn" disabled>Click (+1)</button>
 
     <div class="nav-bar">
       <button id="nav-notions" class="nav-btn active">Notions</button>
@@ -37,26 +51,32 @@
       <button id="nav-shop" class="nav-btn">Shop</button>
       <button id="nav-menu" class="nav-btn">Menu</button>
     </div>
+    <!-- 1. NOTIONS TAB -->
     <div id="tab-notions" class="tab-content" style="display:block;">
-      <h3><span id="notions-title">Your</span> Notions</h3>
-      <div class="slots-container">
-        <h4>Equipped Notions</h4>
-        <div class="slots-grid">
-          <div class="slot bronze" data-type="bronze">Bronze</div>
-          <div class="slot bronze" data-type="bronze">Bronze</div>
-          <div class="slot silver" data-type="silver">Silver</div>
-          <div class="slot gold" data-type="gold">Gold</div>
-        </div>
+      <!-- Pinned 4 Equipped Slots -->
+      <div class="slots-grid">
+        <div class="slot bronze">Bronze</div>
+        <div class="slot bronze">Bronze</div>
+        <div class="slot silver">Silver</div>
+        <div class="slot gold">Gold</div>
       </div>
+
       <div class="inventory-section">
         <h4>Owned Notions</h4>
         <div id="owned-notions-list"></div>
       </div>
     </div>
 
+  <!-- 2. SHOP TAB -->
     <div id="tab-shop" class="tab-content" style="display:none;">
-      <h3>Machines & Equipment</h3>
+      <h3 id="toggle-machines" class="collapsible-header">
+        <span>Machines & Equipment</span>
+        <span id="machines-arrow">▼</span>
+      </h3>
       <div id="shop-items-container"></div>
+
+      <h3>Notion Cards. New cards every week!</h3>
+      <div id="shop-notions-container" class="notions-grid"></div>
     </div>
 
     <div id="tab-crafting" class="tab-content" style="display:none;">
@@ -78,6 +98,7 @@
       </div>
     </div>
   </div>
+  <div id="global-card-tooltip"></div>
 <script src="gameData.js"></script>
   <script src="panel.js"></script>
 </body>

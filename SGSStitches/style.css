@@ -1,83 +1,83 @@
+/* 1. Strict Twitch Height Lock (496px Total) */
 body {
   margin: 0;
-  padding: 12px;
+  padding: 6px;
   font-family: Arial, Helvetica, sans-serif;
   background-color: #18181b;
   color: #efeff1;
   width: 100%;
+  height: 496px;       /* Strict Twitch panel height */
+  max-height: 496px;
+  overflow: hidden;    /* No full-screen scroll */
   box-sizing: border-box;
   display: flex;
-  justify-content: center; /* Centers the panel preview in Chrome */
+  justify-content: center;
 }
 
 .container {
   width: 100%;
-  max-width: 318px; /* Strict Twitch panel width */
+  max-width: 318px;    /* Strict Twitch panel width */
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 2px;            /* Tight gap between top items */
+  box-sizing: border-box;
+}
+
+/* 2. Compact Top Header (~124px total / 25%) */
+#game-notify {
+  font-size: 0.7rem;
+  color: #00ff88;
+  min-height: 12px;
+  line-height: 12px;
 }
 
 h2 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 0.95rem;
   color: #a970ff;
+  line-height: 1;
 }
 
 #status {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   color: #adadb8;
-}
-
-.counter-box {
-  text-align: center;
+  line-height: 1;
 }
 
 #score {
-  font-size: 1.8rem;
+  font-size: 1.3rem;
   font-weight: bold;
   color: #00f0ff;
+  line-height: 1;
 }
 
 .sub-label {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: #adadb8;
+  line-height: 1;
 }
 
 .main-btn {
   background-color: #9146ff;
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 10px 24px;
-  font-size: 1rem;
+  border-radius: 4px;
+  padding: 6px 12px;   /* Slimmed click button */
+  font-size: 0.8rem;
   font-weight: bold;
   cursor: pointer;
   width: 100%;
-  display: block;      /* Needed for auto margins to center */
-  margin: 6px auto;   /* Centers the button horizontally */
+  margin: 2px auto;
+  display: block;
 }
 
-.main-btn:hover:not(:disabled) {
-  background-color: #772ce8;
-}
-
-.main-btn:disabled, .shop-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  filter: grayscale(1);
-}
-#click-btn {
-  width: 40%; /* Or an exact size like 220px */
-}
-
-/* Nav Bar */
 .nav-bar {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   width: 100%;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .nav-btn {
@@ -86,31 +86,27 @@ h2 {
   color: #efeff1;
   border: 1px solid #46464f;
   border-radius: 4px;
-  padding: 6px 0;
-  font-size: 0.8rem;
+  padding: 4px 0;      /* Slimmed tab buttons */
+  font-size: 0.75rem;
   font-weight: bold;
   cursor: pointer;
   text-align: center;
 }
 
-.nav-btn:hover {
-  background-color: #3f3f46;
-  border-color: #9146ff;
-}
-
-.nav-btn.active {
-  background-color: #9146ff;
-  border-color: #a970ff;
-}
-
-/* Tabs */
+/* 3. The 75% Scrollable Tab Area */
 .tab-content {
   display: none;
   width: 100%;
-  margin-top: 10px;
+  flex: 1;             /* Takes all remaining ~75% space automatically */
+  min-height: 0;       /* Required for flex scrolling */
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: 4px;
   border-top: 1px solid #2f2f35;
-  padding-top: 8px;
+  padding-top: 6px;
+  box-sizing: border-box;
 }
+
 
 .tab-content.active {
   display: block;
@@ -221,19 +217,42 @@ h2 {
   gap: 5px;
   margin: 10px 0;
 }
+/* Mini Progress Bar inside Equipped Slot */
+.slot-timer-bar {
+  width: 85%;
+  height: 4px;
+  background-color: #121214;
+  border-radius: 2px;
+  margin-top: 3px;
+  overflow: hidden;
+}
+
+.slot-timer-fill {
+  height: 100%;
+  width: 100%;
+  transition: width 0.5s linear;
+}
+
+.slot-timer-fill.active { background: #00ff88; }
+.slot-timer-fill.cooldown { background: #ff5555; }
 
 .slot {
-  aspect-ratio: 1;
+  aspect-ratio: 5 / 7;
+  border-radius: 4px;
   background: #1f1f23;
   border: 2px dashed #46464f;
   display: flex;
+  flex-direction: column; /* Stacks text vertically */
   align-items: center;
   justify-content: center;
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   color: #adadb8;
   cursor: pointer;
   text-align: center;
   padding: 2px;
+  box-sizing: border-box;
+  overflow: hidden;       /* STRICT: Never let text stretch the slot */
+  min-width: 0;          /* Prevents grid blowout */
 }
 
 .slot.bronze { border-color: #cd7f32; color: #cd7f32; }
@@ -241,9 +260,12 @@ h2 {
 .slot.gold { border-color: #ffd700; color: #ffd700; }
 
 #owned-notions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  max-height: 160px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  padding-bottom: 24px; /* Gives room so bottom cards scroll fully into view */
+  box-sizing: border-box;
 }
 
 /* Menu Tab & Stats */
@@ -334,4 +356,221 @@ h2 {
     opacity: 0;
     transform: translate(-50%, -40px) scale(1.2);
   }
+}
+/* Notion Card Grid & Mini Cards */
+.notions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
+  gap: 8px;
+  margin-top: 8px;
+  padding-bottom: 12px;
+}
+
+.notion-card {
+  aspect-ratio: 5 / 7;
+  border-radius: 4px;
+  background: #26262c;
+  border: 2px solid #46464f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.notion-card:hover {
+  transform: translateY(-2px);
+  z-index: 10;
+}
+
+/* Tier Borders & Glows */
+.notion-card.bronze, .slot.bronze { border-color: #cd7f32; }
+.notion-card.bronze:hover { box-shadow: 0 0 10px #cd7f32; }
+
+.notion-card.silver, .slot.silver { border-color: #c0c0c0; }
+.notion-card.silver:hover { box-shadow: 0 0 10px #c0c0c0; }
+
+.notion-card.gold, .slot.gold { border-color: #ffd700; }
+.notion-card.gold:hover { box-shadow: 0 0 10px #ffd700; }
+
+.card-name {
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #efeff1;
+}
+
+.card-tier-label {
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+#global-card-tooltip {
+  position: fixed;
+  display: none;
+  width: 175px;
+  aspect-ratio: 5 / 7; /* Locks it to 5:7 playing card shape */
+  background-color: #121214cc;
+  color: #efeff1;
+  text-align: left;
+  border-radius: 8px;
+  padding: 10px;
+  border: 2px solid #9146ff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.95);
+  pointer-events: none;
+  font-size: 0.7rem;
+  line-height: 1.3;
+  z-index: 99999;
+  box-sizing: border-box;
+  
+  /* Dead center on panel */
+  left: 50% !important;
+  top: 25% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+
+/* Sleek Dark Scrollbar */
+.tab-content {
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a44 #18181b; /* Firefox support */
+}
+
+/* Chrome / Twitch / Edge */
+.tab-content::-webkit-scrollbar {
+  width: 5px;
+}
+
+.tab-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tab-content::-webkit-scrollbar-thumb {
+  background: #3a3a44;
+  border-radius: 4px;
+}
+
+.tab-content::-webkit-scrollbar-thumb:hover {
+  background: #9146ff; /* Twitch purple on hover */
+}
+/* Collapsible Section Header */
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.collapsible-header:hover {
+  color: #a970ff;
+}
+/* Pinned Slots & Scrollable Owned List */
+#tab-notions .slots-grid {
+  margin: 0 0 8px 0;
+}
+
+/* Disable outer scrollbar on Notions tab so only Owned list scrolls */
+#tab-notions {
+  overflow: hidden !important;
+}
+
+#tab-notions .inventory-section {
+  margin-top: 6px;
+  border-top: 1px solid #2f2f35;
+  padding-top: 6px;
+}
+
+#tab-notions .inventory-section h4 {
+  margin: 0 0 6px 0;
+  font-size: 0.8rem;
+  color: #adadb8;
+  text-align: left;
+}
+
+#owned-notions-list {
+  max-height: 160px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+}
+
+#owned-notions-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+#owned-notions-list::-webkit-scrollbar-thumb {
+  background: #3a3a44;
+  border-radius: 3px;
+}
+
+#shop-notions-container {
+  grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
+  gap: 8px;
+}
+
+/* 3-Column Header Layout */
+.header-hud-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 4px;
+  box-sizing: border-box;
+}
+
+.hud-box {
+  flex: 0 0 105px;           
+  background-color: #1f1f23;
+  border: 1px solid #3a3a44;
+  border-radius: 4px;
+  padding: 4px 6px;         /* More padding for extra breathing room */
+  font-size: 0.58rem;        /* Slightly larger readable text */
+  box-sizing: border-box;
+}
+
+.hud-box h6 {
+  margin: 0 0 3px 0;
+  font-size: 0.65rem;
+  color: #a970ff;
+  border-bottom: 1px solid #2f2f35;
+  padding-bottom: 2px;
+  text-align: center;
+}
+
+.hud-item {
+  display: flex;
+  justify-content: space-between;
+  color: #adadb8;
+  line-height: 1.25;
+}
+
+.hud-item strong {
+  color: #efeff1;
+}
+
+.hud-center-stack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 0;
+}
+
+/* Number clamp to prevent wide numbers from blowing out */
+#score {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #00f0ff;
+  line-height: 1;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
