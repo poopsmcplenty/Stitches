@@ -200,6 +200,21 @@ function startPassiveLoop() {
     score += spm;
     totalPointsEarned += spm;
     updateUI();
+    // Auto-restart equipped timed cards once their cooldown ends
+    equippedSlots.forEach(cardId => {
+      if (!cardId) return;
+      const [key] = cardId.split('_');
+      const tool = GAME_DATA.notions[key];
+      const timed = tool?.Timed || tool?.timed || [0, 0];
+      if (timed[0] > 0) {
+        const timer = cardTimers[cardId];
+        const now = Date.now();
+        // If ready and still equipped, auto-restart active phase!
+        if (!timer || now >= timer.readyAt) {
+          activateTimedCard(cardId, timed);
+        }
+      }
+    });
     updateCraftingProgress();
   }, 1000);
 }
@@ -286,37 +301,81 @@ function getBonusDescription(bonus) {
   return `${val * 100}% ${types[type]}`;
 }
 
-// --- SINGLE REUSABLE TOOLTIP FUNCTION ---
-function showCardTooltip(key, tier, showCost = true) {
+// --- INSPECTION CARD WITH DEDICATED CONFIRM BUTTON ---
+function showCardTooltip(key, tier, mode = 'shop', slotIndex = -1) {
   const tooltip = document.getElementById('global-card-tooltip');
   const tool = GAME_DATA.notions[key];
   const card = tool?.[tier];
   if (!tooltip || !tool || !card) return;
 
+  const cardId = `${key}_${tier}`;
   const craftNames = Object.values(GAME_DATA.craftables).map(c => c.name);
   const timed = tool.Timed || tool.timed || [0, 0];
   const isTimed = timed[0] > 0;
   const timerText = isTimed 
-    ? `⏱️ <strong>Active:</strong> ${Math.round(timed[0] / 60)}m | <strong>Cooldown:</strong> ${Math.round(timed[1] / 60)}m<br>`
-    : `⏱️ <strong>Passive:</strong> (Always On)<br>`;
+    ? `⏱️ <strong>Active:</strong> ${Math.round(timed[0] / 60)}m | <strong>CD:</strong> ${Math.round(timed[1] / 60)}m<br>`
+    : `⏱️ <strong>Type:</strong> Passive (Always On)<br>`;
+}
+  // --- 1. SAFE CONFIRMATION ACTIONS ---
+window.confirmBuyCard = function(key, tier) {
+  buyNotionCard(key, tier);
+  hideCardTooltip();
+};
 
-  // Only build cost text if showCost is true
+window.confirmEquipCard = function(cardId, tier) {
+  equipCard(cardId, tier);
+  hideCardTooltip();
+};
+
+window.confirmUnequipCard = function(slotIndex) {
+  unequipCard(slotIndex);
+  hideCardTooltip();
+};
+
+// --- 2. COMPLETE INSPECTION CARD FUNCTION ---
+function showCardTooltip(key, tier, mode = 'shop', slotIndex = -1) {
+  const tooltip = document.getElementById('global-card-tooltip');
+  const tool = GAME_DATA.notions[key];
+  const card = tool?.[tier];
+  if (!tooltip || !tool || !card) return;
+
+  const cardId = `${key}_${tier}`;
+  const craftNames = Object.values(GAME_DATA.craftables).map(c => c.name);
+  const timed = tool.Timed || tool.timed || [0, 0];
+  const isTimed = timed[0] > 0;
+  const timerText = isTimed 
+    ? `⏱️ <strong>Active:</strong> ${Math.round(timed[0] / 60)}m | <strong>CD:</strong> ${Math.round(timed[1] / 60)}m<br>`
+    : `⏱️ <strong>Type:</strong> Passive (Always On)<br>`;
+
+  // Cost text (only shown on shop cards)
   let costHTML = "";
-  if (showCost) {
+  if (mode === 'shop') {
     const costText = card.cost
       .map((amt, idx) => amt > 0 ? `${amt} ${craftNames[idx]}` : null)
       .filter(Boolean)
       .join(', ');
-    costHTML = `💰 <strong>Cost:</strong> ${costText}`;
+    costHTML = `💰 <strong>Cost:</strong> ${costText}<br>`;
+  }
+
+  // Build the dedicated Action Button based on where you tapped
+  let actionBtnHTML = "";
+  if (mode === 'shop') {
+    actionBtnHTML = `<button class="inspect-action-btn" onclick="confirmBuyCard('${key}', '${tier}')">Trade for Card</button>`;
+  } else if (mode === 'inventory') {
+    actionBtnHTML = `<button class="inspect-action-btn" onclick="confirmEquipCard('${cardId}', '${tier}')">Equip Card</button>`;
+  } else if (mode === 'equipped') {
+    actionBtnHTML = `<button class="inspect-action-btn unequip" onclick="confirmUnequipCard(${slotIndex})">Unequip</button>`;
   }
 
   tooltip.innerHTML = `
+    <span class="inspect-close-btn" onclick="hideCardTooltip()">✕</span>
     <strong>${tool.name} (${tier.toUpperCase()})</strong><br>
     <em>"${tool.Description || ''}"</em><br><br>
     ⚡ <strong>SPM:</strong> +${card.spm}<br>
     ✨ <strong>Perk:</strong> ${getBonusDescription(card.bonus)}<br>
     ${timerText}
     ${costHTML}
+    ${actionBtnHTML}
   `;
   tooltip.style.display = 'block';
 }
@@ -358,7 +417,15 @@ function renderShopNotions() {
 
       const el = document.createElement('div');
       el.className = `notion-card ${tier}`;
-      if (isMaxed) el.style.opacity = '0.35'; // Dims maxed cards
+
+      // If already max-owned, grey it out and disable clicks completely!
+      if (isMaxed) {
+        el.style.opacity = '0.35';
+        el.style.pointerEvents = 'none'; // Disables clicking & hover
+        el.style.cursor = 'not-allowed';
+      } else {
+        el.onclick = () => showCardTooltip(key, tier, 'shop');
+      }
 
       el.innerHTML = `
         <div class="card-name">${tool.name}</div>
@@ -366,40 +433,8 @@ function renderShopNotions() {
           ${isMaxed ? 'MAX OWNED' : tier}
         </div>
       `;
-
-      // Hover: position tooltip right above the card and clamp within 318px bounds
-      el.onmouseenter = () => {
-        tooltip.innerHTML = `
-          <strong>${tool.name} (${tier.toUpperCase()})</strong><br>
-          <em>"${tool.Description || ''}"</em><br><br>
-          ⚡ <strong>SPM:</strong> +${card.spm}<br>
-          ✨ <strong>Perk:</strong> ${getBonusDescription(card.bonus)}<br>
-          ${timerText}
-          💰 <strong>Cost:</strong> ${costText}
-        `;
-        tooltip.style.display = 'block';
-
-        const rect = el.getBoundingClientRect();
-        const tooltipWidth = 200;
-        
-        // Position directly above card
-        let left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
-        
-        // Clamp to stay inside screen edges (10px padding)
-        left = Math.max(10, Math.min(window.innerWidth - tooltipWidth - 10, left));
-        
-        let top = rect.top - tooltip.offsetHeight - 8;
-        if (top < 10) top = rect.bottom + 8; // If near top edge, show below card instead
-
-        tooltip.style.left = `${left}px`;
-        tooltip.style.top = `${top}px`;
-      };
-
-      el.onmouseleave = () => {
-        tooltip.style.display = 'none';
-      };
-
-      el.onclick = () => buyNotionCard(key, tier);
+      // Hover: on click
+      el.onclick = () => showCardTooltip(key, tier, 'shop');
       container.appendChild(el);
     });
   }
@@ -526,11 +561,13 @@ function buyShopItem(key) {
   if (!item) return;
 
   const perks = getActiveNotionBonuses();
-    const qtyInput = document.getElementById(`qty-shop-${key}`);
-    const qty = parseInt(qtyInput?.value) || 1;
-    const discountedCost = Math.max(1, Math.round(item.cost * (1 - perks.shopCostDiscount)));
-    const totalCost = discountedCost * qty;
-    const currentBowls = craftInventory.stdBowl || 0;
+  const qtyInput = document.getElementById(`qty-shop-${key}`);
+  const qty = parseInt(qtyInput?.value) || 1;
+
+  // Apply discount to total purchase batch
+  const rawTotal = item.cost * qty;
+  const totalCost = Math.max(1, Math.floor(rawTotal * (1 - perks.shopCostDiscount)));
+  const currentBowls = craftInventory.stdBowl || 0;
 
   // Check Bobbin Winder machine cap rule
   if (item.cap === "machinesOwned") {
@@ -546,7 +583,8 @@ function buyShopItem(key) {
     ropeBowlsCount = craftInventory.stdBowl;
     shopInventory[key] = (shopInventory[key] || 0) + qty;
 
-    showNotify(`Bought ${qty}x ${item.name}!`);
+    const discountMsg = perks.shopCostDiscount > 0 ? ` (${Math.round(perks.shopCostDiscount * 100)}% off!)` : '';
+    showNotify(`Bought ${qty}x ${item.name} for ${totalCost} Bowls${discountMsg}!`);
     updateUI();
     saveUserData();
   } else {
@@ -559,7 +597,16 @@ function renderCrafting() {
   if (!container) return;
   container.innerHTML = '';
 
+  const perks = getActiveNotionBonuses();
+
   for (const [key, item] of Object.entries(GAME_DATA.craftables)) {
+    const discountedCost = Math.max(1, Math.floor(item.cost * (1 - perks.craftCostDiscount)));
+    const discountedTime = Math.max(1, Math.floor(item.craftTime * (1 - perks.craftTimeDiscount)));
+
+    const costText = perks.craftCostDiscount > 0
+      ? `<span style="color:#00ff88;">Costs ${discountedCost} Stitches</span> <s style="color:#adadb8; font-size:0.65rem;">(${item.cost})</s>`
+      : `Costs ${item.cost} Stitches`;
+
     const row = document.createElement('div');
     row.className = 'crafting-item';
     row.style.flexDirection = 'column';
@@ -568,7 +615,7 @@ function renderCrafting() {
       <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
         <div class="craft-info">
           <strong>${item.name}</strong>
-          <span>Costs ${item.cost} Stitches (${item.craftTime}s)</span>
+          <span>${costText} (${discountedTime}s)</span>
           <small>Owned: <span id="owned-${key}">0</span></small>
         </div>
         <div class="craft-controls">
@@ -592,20 +639,16 @@ function startCrafting(key) {
   const qtyInput = document.getElementById(`qty-${key}`);
   const qty = parseInt(qtyInput?.value) || 1;
 
-  // Apply Bonus 1 (Cheaper Crafting %) and Bonus 2 (Faster Crafting %)
-  const discountedCost = Math.max(1, Math.round(item.cost * (1 - perks.craftCostDiscount)));
-  const discountedTime = Math.max(1, Math.round(item.craftTime * (1 - perks.craftTimeDiscount)));
-
+  // Stitch cost discount still applies at click time
+  const discountedCost = Math.max(1, Math.floor(item.cost * (1 - perks.craftCostDiscount)));
   const totalCost = discountedCost * qty;
-  const totalTimeSeconds = discountedTime * qty;
 
   if (score >= totalCost) {
     score -= totalCost;
-    const now = Date.now();
     activeCrafts[key] = {
-      startTime: now,
-      finishTime: now + (totalTimeSeconds * 1000),
-      totalDuration: totalTimeSeconds * 1000,
+      totalBaseSeconds: item.craftTime * qty,
+      completedSeconds: 0,
+      lastUpdate: Date.now(),
       qty: qty
     };
 
@@ -617,9 +660,13 @@ function startCrafting(key) {
   }
 }
 
-// Checks and updates crafting progress every second
+// Checks and updates crafting progress dynamically every second
 function updateCraftingProgress() {
   const now = Date.now();
+  const perks = getActiveNotionBonuses();
+
+  // Dynamic Speed Multiplier (e.g. 50% discount = 2x speed)
+  const speed = 1 / Math.max(0.1, (1 - perks.craftTimeDiscount));
 
   for (const [key, craft] of Object.entries(activeCrafts)) {
     const pBox = document.getElementById(`progress-box-${key}`);
@@ -629,7 +676,19 @@ function updateCraftingProgress() {
 
     if (!pBox || !pBar || !pTimer) continue;
 
-    if (now >= craft.finishTime) {
+    // Backward-compatibility check for existing saves
+    if (craft.totalBaseSeconds === undefined) {
+      craft.totalBaseSeconds = (craft.totalDuration || 10000) / 1000;
+      craft.completedSeconds = Math.max(0, (now - (craft.startTime || now)) / 1000);
+      craft.lastUpdate = now;
+    }
+
+    // Add progress based on current active speed
+    const delta = (now - craft.lastUpdate) / 1000;
+    craft.lastUpdate = now;
+    craft.completedSeconds += delta * speed;
+
+    if (craft.completedSeconds >= craft.totalBaseSeconds) {
       // Craft complete! Deliver items
       craftInventory[key] = (craftInventory[key] || 0) + craft.qty;
       lifetimeCrafted[key] = (lifetimeCrafted[key] || 0) + craft.qty;
@@ -643,16 +702,15 @@ function updateCraftingProgress() {
       updateUI();
       saveUserData();
     } else {
-      // In progress: update bar and remaining time
       pBox.style.display = 'block';
       pTimer.style.display = 'block';
       if (craftBtn) craftBtn.disabled = true;
 
-      const elapsed = now - craft.startTime;
-      const percent = Math.min(100, (elapsed / craft.totalDuration) * 100);
+      const percent = Math.min(100, (craft.completedSeconds / craft.totalBaseSeconds) * 100);
       pBar.style.width = `${percent}%`;
 
-      const remainingSec = Math.ceil((craft.finishTime - now) / 1000);
+      const remainingBase = Math.max(0, craft.totalBaseSeconds - craft.completedSeconds);
+      const remainingSec = Math.ceil(remainingBase / speed);
       pTimer.innerText = `Crafting: ${remainingSec}s remaining`;
     }
   }
@@ -758,23 +816,16 @@ function renderNotionsTab() {
         ${statusBadge}
       `;
 
-      slotEl.onmouseenter = () => showCardTooltip(key, tier, false);
-      slotEl.onmouseleave = hideCardTooltip;
-
-      slotEl.onclick = () => {
-        // If it's a timed card that's ready, activate it; otherwise unequip
-        if (isTimed && !isActive && !isCooldown) {
-          activateTimedCard(cardId, timed);
-        } else {
-          unequipCard(index);
-        }
-      };
+      
+      
+      slotEl.onclick = () => showCardTooltip(key, tier, 'equipped', index);
     } else {
+      // When slot is empty:
       const defaultTiers = ['Bronze', 'Bronze', 'Silver', 'Gold'];
       const slotTier = defaultTiers[index].toLowerCase();
       slotEl.className = `slot ${slotTier}`;
       slotEl.innerHTML = `<span>${defaultTiers[index]}<br><small>Empty</small></span>`;
-      slotEl.onclick = null;
+      slotEl.onclick = null; // Empty slots do nothing
       slotEl.onmouseenter = null;
       slotEl.onmouseleave = null;
     }
@@ -796,23 +847,49 @@ function renderNotionsTab() {
 
       if (totalOwned > 0) {
         hasCards = true;
+
+        // Check if this card is currently on cooldown
+        const timed = tool?.Timed || tool?.timed || [0, 0];
+        const isTimed = timed[0] > 0;
+        const timer = cardTimers[cardId];
+        const now = Date.now();
+        const isCooldown = isTimed && timer && now < timer.readyAt;
+
+        let cooldownBadge = "";
+        if (isCooldown && availableToEquip > 0) {
+          const totalCd = timed[1] * 1000;
+          const rem = Math.max(0, timer.readyAt - now);
+          const pct = Math.max(0, Math.min(100, (rem / totalCd) * 100));
+          const remSec = Math.ceil(rem / 1000);
+          const remText = remSec > 60 ? `${Math.ceil(remSec / 60)}m` : `${remSec}s`;
+
+          cooldownBadge = `
+            <span style="font-size: 0.48rem; color: #ff5555; margin-top: 1px;">⏳ CD (${remText})</span>
+            <div class="slot-timer-bar"><div class="slot-timer-fill cooldown" style="width:${pct}%"></div></div>
+          `;
+        }
+
         const cardEl = document.createElement('div');
         cardEl.className = `notion-card ${tier}`;
-        cardEl.style.opacity = availableToEquip > 0 ? '1' : '0.4';
+
+        // If all copies are equipped, grey out and disable clicks completely!
+        if (availableToEquip === 0) {
+          cardEl.style.opacity = '0.35';
+          cardEl.style.pointerEvents = 'none';
+          cardEl.style.cursor = 'not-allowed';
+        } else {
+          cardEl.style.opacity = '1';
+          cardEl.onclick = () => showCardTooltip(key, tier, 'inventory');
+        }
+
         cardEl.innerHTML = `
           <div class="card-name">${tool.name}</div>
-          <div class="card-tier-label" style="color: ${tier === 'gold' ? '#ffd700' : tier === 'silver' ? '#c0c0c0' : '#cd7f32'}">${tier}</div>
-          <small style="font-size: 0.55rem; margin-top: 2px;">Owned: ${totalOwned} (${availableToEquip} free)</small>
+          <div class="card-tier-label" style="color: ${tier === 'gold' ? '#ffd700' : tier === 'silver' ? '#c0c0c0' : '#cd7f32'}">
+            ${availableToEquip === 0 ? 'EQUIPPED' : tier}
+          </div>
+          ${cooldownBadge}
+          <small style="font-size: 0.52rem; margin-top: 2px;">Owned: ${totalOwned} (${availableToEquip} free)</small>
         `;
-        cardEl.onmouseenter = () => showCardTooltip(key, tier, false);
-        cardEl.onmouseleave = hideCardTooltip;
-        cardEl.onclick = () => {
-          if (availableToEquip > 0) {
-            equipCard(cardId, tier);
-          } else {
-            showNotify("All copies already equipped!", true);
-          }
-        };
 
         grid.appendChild(cardEl);
       }
@@ -826,8 +903,32 @@ function renderNotionsTab() {
   }
 }
 
-// --- EQUIP CARD (Slot Rules: Bronze 1-4, Silver 3 only, Gold 4 only) ---
+// --- EQUIP CARD (Slot Rules + Max 1 of each Perk Type) ---
 function equipCard(cardId, tier) {
+  const [key] = cardId.split('_');
+  const tool = GAME_DATA.notions[key];
+  const card = tool?.[tier];
+  if (!card) return;
+
+  // RULE: Only allow 1 of each perk type equipped across all 4 slots!
+  if (card.bonus && card.bonus.length >= 2) {
+    const perkType = card.bonus[0];
+    const perkNames = ["Click Multiplier", "Cheaper Crafting", "Faster Crafting", "Cheaper Shop", "SPM Boost"];
+
+    const isDuplicate = equippedSlots.some(eqId => {
+      if (!eqId) return false;
+      const [eqKey, eqTier] = eqId.split('_');
+      const eqCard = GAME_DATA.notions[eqKey]?.[eqTier];
+      return eqCard?.bonus && eqCard.bonus[0] === perkType;
+    });
+
+    if (isDuplicate) {
+      showNotify(`Already have a ${perkNames[perkType]} card equipped!`, true);
+      return;
+    }
+  }
+
+  // Slot tier checks (Bronze anywhere, Silver Slot 3, Gold Slot 4)
   let targetSlot = -1;
 
   if (tier === 'bronze') {
@@ -840,9 +941,24 @@ function equipCard(cardId, tier) {
 
   if (targetSlot !== -1) {
     equippedSlots[targetSlot] = cardId;
-    showNotify(`Equipped to Slot ${targetSlot + 1}!`);
+    
+    // Auto-start active phase if it's a timed card and not on cooldown
+    const timed = tool?.Timed || tool?.timed || [0, 0];
+    const isTimed = timed[0] > 0;
+    const timer = cardTimers[cardId];
+    const now = Date.now();
+    const isCooldown = timer && now < timer.readyAt;
+
+    if (isTimed && !isCooldown) {
+      activateTimedCard(cardId, timed);
+    } else {
+      showNotify(`Equipped to Slot ${targetSlot + 1}!`);
+    }
+
     updateUI();
     renderNotionsTab();
+    renderCrafting();
+    renderShop();
     saveUserData();
   } else {
     showNotify(`No valid empty slot for ${tier.toUpperCase()} card!`, true);
@@ -870,6 +986,8 @@ function unequipCard(slotIndex) {
   showNotify(`Unequipped Slot ${slotIndex + 1}!`);
   updateUI();
   renderNotionsTab();
+  renderCrafting(); // Updates crafting discounts immediately!
+  renderShop();     // Updates shop discounts immediately!
   saveUserData();
 }
 

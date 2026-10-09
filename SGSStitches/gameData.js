@@ -5,11 +5,11 @@ const GAME_DATA = {
   // --- CRAFTABLES ---
   // [Stitch Cost]
   craftables: {
-    coaster:   { name: "Coaster",            cost: 50,    craftTime: 10 },   // 30 seconds
-    stdBowl:   { name: "Standard Rope Bowl", cost: 200,   craftTime: 30 },   // 1 minute
-    rainbowl:  { name: "Rainbowl Rope Bowl", cost: 1000,  craftTime: 300 },  // 5 minutes
-    largeBowl: { name: "Large Rope Bowl",    cost: 5000,  craftTime: 900 },  // 15 minutes
-    fabric:    { name: "Fabric",             cost: 20000, craftTime: 1800 }  // 30 minutes
+    coaster:   { name: "Coaster",            cost: 50,    craftTime: 10 },   // 10 seconds
+    stdBowl:   { name: "Standard Rope Bowl", cost: 200,   craftTime: 30 },   // 30 seconds
+    rainbowl:  { name: "Rainbowl Rope Bowl", cost: 1000,  craftTime: 300 },  // 300 seconds
+    largeBowl: { name: "Large Rope Bowl",    cost: 5000,  craftTime: 900 },  // 900 seconds
+    fabric:    { name: "Fabric",             cost: 20000, craftTime: 1800 }  // 1800 seconds
   },
 
   // --- SHOP (MACHINES & POWER-UPS) ---
@@ -50,9 +50,9 @@ const GAME_DATA = {
 
     Bobbin: {
       name: "Super Bobbin", Timed: [900, 6000], Description: "The Super Bobbin boosts your spin speed, but overheats!",
-      bronze: { spm: 10,  bonus: [1, 0.25], cost: [500, 50, 40, 10, 1] },   // 15% faster craftinng
-      silver: { spm: 25, bonus: [1, 0.50], cost: [750, 75, 60, 20, 2] },  // 30% faster crafting
-      gold:   { spm: 50, bonus: [1, 0.75], cost: [1000, 150, 80, 40, 3] } // 75% faster crafting
+      bronze: { spm: 10,  bonus: [1, 0.25], cost: [500, 50, 40, 10, 1] },   // 15% cheaper craftinng
+      silver: { spm: 25, bonus: [1, 0.50], cost: [750, 75, 60, 20, 2] },    // 30% cheaper crafting
+      gold:   { spm: 50, bonus: [1, 0.75], cost: [1000, 150, 80, 40, 3] }   // 75% cheaper crafting
     }
 }
 };
