@@ -103,15 +103,26 @@ async function initGame() {
 }
 
 function showJoin() {
-  document.getElementById('join-container').style.display = 'block';
-  document.getElementById('game-ui').style.display = 'none';
-  document.querySelector('.nav-bar').style.display = 'none';
+  const join = document.getElementById('join-container');
+  if (join) join.style.display = 'block';
+
+  const gameUI = document.getElementById('game-ui');
+  if (gameUI) gameUI.style.display = 'none';
+
+  const dock = document.querySelector('.bottom-dock-nav');
+  if (dock) dock.style.display = 'none';
 }
 
 function showGame() {
-  document.getElementById('join-container').style.display = 'none';
-  document.getElementById('game-ui').style.display = 'block';
-  document.querySelector('.nav-bar').style.display = 'flex';
+  const join = document.getElementById('join-container');
+  if (join) join.style.display = 'none';
+
+  const gameUI = document.getElementById('game-ui');
+  if (gameUI) gameUI.style.display = 'block';
+
+  const dock = document.querySelector('.bottom-dock-nav');
+  if (dock) dock.style.display = 'flex';
+
   updateUI();
 }
 
@@ -301,21 +312,6 @@ function getBonusDescription(bonus) {
   return `${val * 100}% ${types[type]}`;
 }
 
-// --- INSPECTION CARD WITH DEDICATED CONFIRM BUTTON ---
-function showCardTooltip(key, tier, mode = 'shop', slotIndex = -1) {
-  const tooltip = document.getElementById('global-card-tooltip');
-  const tool = GAME_DATA.notions[key];
-  const card = tool?.[tier];
-  if (!tooltip || !tool || !card) return;
-
-  const cardId = `${key}_${tier}`;
-  const craftNames = Object.values(GAME_DATA.craftables).map(c => c.name);
-  const timed = tool.Timed || tool.timed || [0, 0];
-  const isTimed = timed[0] > 0;
-  const timerText = isTimed 
-    ? `⏱️ <strong>Active:</strong> ${Math.round(timed[0] / 60)}m | <strong>CD:</strong> ${Math.round(timed[1] / 60)}m<br>`
-    : `⏱️ <strong>Type:</strong> Passive (Always On)<br>`;
-}
   // --- 1. SAFE CONFIRMATION ACTIONS ---
 window.confirmBuyCard = function(key, tier) {
   buyNotionCard(key, tier);
@@ -516,21 +512,47 @@ function updateUI() {
 }
 }
 
-// --- TAB SWITCHING ---
-function switchTab(tabId, btnId) {
+// --- CLOSE ALL DRAWERS HELPER ---
+window.closeAllDrawers = function() {
   document.querySelectorAll(".tab-content").forEach(tab => tab.style.display = "none");
-  document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
-  if (tabId === 'tab-notions') renderNotionsTab();
+  document.querySelectorAll(".dock-btn").forEach(b => b.classList.remove("active"));
+  const menuBtn = document.getElementById("menu-toggle-btn");
+  if (menuBtn) menuBtn.classList.remove("active");
+};
+
+// --- TAB SWITCHING (Renders contents dynamically on open) ---
+function switchTab(tabId, btnId) {
   const target = document.getElementById(tabId);
-  if (target) target.style.display = "block";
   const btn = document.getElementById(btnId);
-  if (btn) btn.classList.add("active");
+  if (!target) return;
+
+  const isAlreadyOpen = target.style.display === "block";
+
+  // Close all open drawers first
+  closeAllDrawers();
+
+  if (!isAlreadyOpen) {
+    target.style.display = "block";
+    if (btn) btn.classList.add("active");
+
+    // Render contents on open!
+    if (tabId === 'tab-notions') renderNotionsTab();
+    if (tabId === 'tab-crafting') {
+      renderCrafting();
+      updateCraftingProgress(); // Instantly show active timers & progress bars!
+    }
+    if (tabId === 'tab-shop') {
+      renderShop();
+      renderShopNotions();
+    }
+    updateUI();
+  }
 }
 
+bindClick("nav-crafting", () => switchTab("tab-crafting", "nav-crafting"));
 bindClick("nav-notions", () => switchTab("tab-notions", "nav-notions"));
 bindClick("nav-shop", () => switchTab("tab-shop", "nav-shop"));
-bindClick("nav-crafting", () => switchTab("tab-crafting", "nav-crafting"));
-bindClick("nav-menu", () => switchTab("tab-menu", "nav-menu"));
+bindClick("menu-toggle-btn", () => switchTab("tab-menu", "menu-toggle-btn"));
 bindClick("manual-save-btn", () => saveUserData());
 
 function renderShop() {
@@ -1008,3 +1030,55 @@ function activateTimedCard(cardId, timed) {
   saveUserData();
 }
 
+const clickerBtn = document.querySelector('.round-clicker-btn');
+const container = document.querySelector('.container');
+
+if (clickerBtn) {
+  let lastClickTime = 0;
+  const cooldown = 100;
+
+  clickerBtn.addEventListener('click', (e) => {
+    clickerBtn.classList.remove('is-bouncing');
+    void clickerBtn.offsetWidth;
+    clickerBtn.classList.add('is-bouncing');
+
+    const now = Date.now();
+    if (now - lastClickTime >= cooldown) {
+      lastClickTime = now;
+
+      const ripple = document.createElement('div');
+      ripple.className = 'clicker-ripple';
+      clickerBtn.appendChild(ripple);
+
+      ripple.addEventListener('animationend', (e) => {
+        if (e.animationName === 'lightFlowOut') {
+          ripple.remove();
+        }
+      });
+
+      // Randomized burst wrapper
+      const burstWrapper = document.createElement('div');
+      burstWrapper.style.position = 'absolute';
+      burstWrapper.style.top = '75%';
+      burstWrapper.style.left = '50%';
+      burstWrapper.style.pointerEvents = 'none';
+      burstWrapper.style.zIndex = '2';
+      burstWrapper.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+      const burst = document.createElement('div');
+      burst.className = 'click-ember-burst';
+      burstWrapper.appendChild(burst);
+      if (container) container.appendChild(burstWrapper);
+
+      burst.addEventListener('animationend', () => {
+        burstWrapper.remove();
+      });
+    }
+  });
+
+  clickerBtn.addEventListener('animationend', (e) => {
+    if (e.animationName === 'buttonBounce') {
+      clickerBtn.classList.remove('is-bouncing');
+    }
+  });
+}

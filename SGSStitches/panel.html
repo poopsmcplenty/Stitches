@@ -15,76 +15,119 @@
 </head>
 <body>
   <div class="container">
-    <!-- <div id="status">Connecting...</div> --> 
-    <div id="game-notify" style="font-size: 0.75rem; color: #00ff88; opacity: 0; transition: opacity 0.4s;">Notification</div>
-  <!-- 3-Column Top Header: Machines | Center Stack | Inventory -->
-    <div class="header-hud-row">
-      <!-- Left: Machines -->
-      <div class="hud-box">
-        <h6>Machines</h6>
-        <div id="hud-machines-list"></div>
-      </div>
+    <div id="global-card-tooltip"></div>
 
-      <!-- Center Stack: Title, Score, Clicker -->
-      <div class="hud-center-stack">
-        <h2>Stitches</h2>
-        <div id="join-container" style="display:none;">
-          <button id="join-btn" class="main-btn">Join Game</button>
-        </div>
-        <div id="game-ui" style="display: none;">
-          <div id="score">0</div>
-          <div class="sub-label"><span id="pps">1</span> Stitches / sec</div>
-        </div>
-        <button id="click-btn" class="main-btn" disabled>Click (+1)</button>
-      </div>
+    <!-- ====================================================================
+         1. TOP BAR: Sound Toggle | Title/Logo | Menu Icon
+         ==================================================================== -->
+    <div class="top-nav-bar">
+      <!-- Mute/Sound Button -->
+      <button id="sound-toggle-btn" class="top-tool-btn" title="Toggle Audio">🔊</button>
 
-      <!-- Right: Inventory -->
-      <div class="hud-box">
-        <h6>Crafted Items</h6>
-        <div id="hud-inventory-list"></div>
-      </div>
+      <!-- GAME LOGO (Replace text with <img src="images/logo.png" class="logo-img"> later) -->
+      <h1 class="game-logo">STITCHES</h1>
+
+      <!-- Hamburger Menu for Settings & Stats -->
+      <button id="menu-toggle-btn" class="top-tool-btn" title="Menu">☰</button>
     </div>
 
-    <div class="nav-bar">
-      <button id="nav-notions" class="nav-btn active">Notions</button>
-      <button id="nav-crafting" class="nav-btn">Crafting</button>
-      <button id="nav-shop" class="nav-btn">Shop</button>
-      <button id="nav-menu" class="nav-btn">Menu</button>
-    </div>
-    <!-- 1. NOTIONS TAB -->
-    <div id="tab-notions" class="tab-content" style="display:block;">
-      <!-- Pinned 4 Equipped Slots -->
+    <!-- ====================================================================
+         2. PURPLE PILL BANNER: Notification & Stitches Counter
+         ==================================================================== -->
+    <div class="purple-pill-banner">
+      <div id="game-notify">Connecting...</div>
+      <div id="game-ui" style="display: none;">
+        <span id="score">0</span> Stitches<br>
+        <span id="pps">1</span> /s
+      </div>
+    </div>  
+
+    <!-- ====================================================================
+         3. EQUIPPED CARDS ROW (4 Pinned Slots Front-and-Center)
+         ==================================================================== -->
+    <div class="equipped-shelf">
       <div class="slots-grid">
         <div class="slot bronze">Bronze</div>
         <div class="slot bronze">Bronze</div>
         <div class="slot silver">Silver</div>
         <div class="slot gold">Gold</div>
       </div>
-
-      <div class="inventory-section">
-        <h4>Owned Notions</h4>
-        <div id="owned-notions-list"></div>
-      </div>
     </div>
 
-  <!-- 2. SHOP TAB -->
+    <!-- ====================================================================
+         4. BIG CENTERPIECE CLICKER (Ready for custom skins/images)
+         ==================================================================== -->
+    <div class="centerpiece-area">
+      <div id="join-container" style="display:none;">
+        <button id="join-btn" class="main-btn">Join Game</button>
+      </div>
+
+      <!-- THE MAIN ROUND CLICK BUTTON -->
+      <button id="click-btn" class="round-clicker-btn" disabled>
+        <!-- PLACEHOLDER FOR CLICKER SKIN (e.g. <img src="images/button_skin.png">) -->
+        <span id="clicker-icon">🧵</span>
+      </button>
+    </div>
+
+    <!-- ====================================================================
+         5. BOTTOM 3-ICON NAVIGATION DOCK
+         ==================================================================== -->
+    <div class="bottom-dock-nav">
+      <!-- 1. Crafting Tab Button -->
+      <button id="nav-crafting" class="dock-btn">
+        <!-- PLACEHOLDER: Replace 🥣 with <img src="images/bowl_icon.png" class="dock-img"> -->
+        <span class="dock-icon">🥣</span>
+        <span class="dock-label">Craft</span>
+      </button>
+
+      <!-- 2. Notions Tab Button -->
+      <button id="nav-notions" class="dock-btn active">
+        <!-- PLACEHOLDER: Replace 🎴 with <img src="images/cards_icon.png" class="dock-img"> -->
+        <span class="dock-icon">🎴</span>
+        <span class="dock-label">Cards</span>
+      </button>
+
+      <!-- 3. Shop Tab Button -->
+      <button id="nav-shop" class="dock-btn">
+        <!-- PLACEHOLDER: Replace 🧵 with <img src="images/machine_icon.png" class="dock-img"> -->
+        <span class="dock-icon">🧵</span>
+        <span class="dock-label">Shop</span>
+      </button>
+    </div>
+
+    <!-- ====================================================================
+         6. TAB OVERLAYS / DRAWERS
+         ==================================================================== -->
+    <!-- 1. Notions Tab Drawer -->
+    <div id="tab-notions" class="tab-content" style="display:none;">
+      <span class="drawer-close-btn" onclick="closeAllDrawers()">✕</span>
+      <h3>Owned Notions</h3>
+      <div id="owned-notions-list"></div>
+    </div>
+
+    <!-- 2. Crafting Tab Drawer -->
+    <div id="tab-crafting" class="tab-content" style="display:none;">
+      <span class="drawer-close-btn" onclick="closeAllDrawers()">✕</span>
+      <h3>Crafting</h3>
+      <div id="crafting-items-container"></div>
+    </div>
+
+    <!-- 3. Shop Tab Drawer -->
     <div id="tab-shop" class="tab-content" style="display:none;">
+      <span class="drawer-close-btn" onclick="closeAllDrawers()">✕</span>
       <h3 id="toggle-machines" class="collapsible-header">
         <span>Machines & Equipment</span>
         <span id="machines-arrow">▼</span>
       </h3>
       <div id="shop-items-container"></div>
 
-      <h3>Notion Cards. New cards every week!</h3>
+      <h3>Notion Cards</h3>
       <div id="shop-notions-container" class="notions-grid"></div>
     </div>
 
-    <div id="tab-crafting" class="tab-content" style="display:none;">
-      <h3>Crafting Recipes</h3>
-      <div id="crafting-items-container"></div>
-    </div>
-
+    <!-- 4. Menu / Settings Tab Drawer -->
     <div id="tab-menu" class="tab-content" style="display:none;">
+      <span class="drawer-close-btn" onclick="closeAllDrawers()">✕</span>
       <h3>Menu & Settings</h3>
       <div class="menu-section">
         <button id="quit-btn" class="main-btn" style="background-color: #ff4444; margin-bottom: 5px;">Quit Game</button>
@@ -93,13 +136,15 @@
       <div class="menu-section">
         <h4>Stats</h4>
         <div class="stat-row"><span>Player ID:</span> <span id="stat-user">Loading...</span></div>
-        <div class="stat-row"><span>Current SPM:</span> <span id="stat-total-spm">1</span></div>
         <div class="stat-row"><span>Total Stitches:</span> <span id="stat-total-stitches">0</span></div>
+        <div class="stat-row"><span>Current SPM:</span> <span id="stat-total-spm">1</span></div>
       </div>
     </div>
-  </div>
-  <div id="global-card-tooltip"></div>
-<script src="gameData.js"></script>
+  </div> <!-- Closes #tab-menu -->
+  </div> <!-- Closes .container -->
+
+  <!-- YOU ARE MISSING THESE 4 LINES: -->
+  <script src="gameData.js"></script>
   <script src="panel.js"></script>
 </body>
 </html>
