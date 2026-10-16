@@ -279,6 +279,8 @@ body {
   user-select: none;
   position: relative;
   overflow: visible;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
 }
 
 .round-clicker-btn:hover:not(:disabled) {
