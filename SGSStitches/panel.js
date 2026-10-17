@@ -330,55 +330,88 @@ window.confirmUnequipCard = function(slotIndex) {
 
 // --- 2. COMPLETE INSPECTION CARD FUNCTION ---
 function showCardTooltip(key, tier, mode = 'shop', slotIndex = -1) {
-  const tooltip = document.getElementById('global-card-tooltip');
-  const tool = GAME_DATA.notions[key];
-  const card = tool?.[tier];
-  if (!tooltip || !tool || !card) return;
+ const tooltip = document.getElementById('global-card-tooltip');
+ const tool = GAME_DATA.notions[key];
+ const card = tool?.[tier];
+ if (!tooltip || !tool || !card) return;
 
-  const cardId = `${key}_${tier}`;
-  const craftNames = Object.values(GAME_DATA.craftables).map(c => c.name);
-  const timed = tool.Timed || tool.timed || [0, 0];
-  const isTimed = timed[0] > 0;
-  const timerText = isTimed 
-    ? `⏱️ <strong>Active:</strong> ${Math.round(timed[0] / 60)}m | <strong>CD:</strong> ${Math.round(timed[1] / 60)}m<br>`
-    : `⏱️ <strong>Type:</strong> Passive (Always On)<br>`;
+ const cardId = `${key}_${tier}`;
+ const craftNames = Object.values(GAME_DATA.craftables).map(c => c.name);
+ const timed = tool.Timed || tool.timed || [0, 0];
+ const isTimed = timed[0] > 0;
+ const timerText = isTimed 
+? `⏱️ <strong>Active:</strong> ${Math.round(timed[0] / 60)}m | <strong>CD:</strong> ${Math.round(timed[1] / 60)}m<br>`
+ : `⏱️ <strong>Type:</strong> Passive (Always On)<br>`;
 
-  // Cost text (only shown on shop cards)
-  let costHTML = "";
-  if (mode === 'shop') {
-    const costText = card.cost
-      .map((amt, idx) => amt > 0 ? `${amt} ${craftNames[idx]}` : null)
-      .filter(Boolean)
-      .join(', ');
-    costHTML = `💰 <strong>Cost:</strong> ${costText}<br>`;
-  }
+ // Cost section list (only shown on shop cards)
+ let costHTML = "";
+ if (mode === 'shop') {
+ const costItemsHTML = card.cost
+ .map((needed, idx) => {
+ if (needed <= 0) return null;
+ const itemName = craftNames[idx];
+ const owned = craftInventory[Object.keys(GAME_DATA.craftables)[idx]] || 0;
+ const isMet = owned >= needed;
 
-  // Build the dedicated Action Button based on where you tapped
-  let actionBtnHTML = "";
-  if (mode === 'shop') {
-    actionBtnHTML = `<button class="inspect-action-btn" onclick="confirmBuyCard('${key}', '${tier}')">Trade for Card</button>`;
-  } else if (mode === 'inventory') {
-    actionBtnHTML = `<button class="inspect-action-btn" onclick="confirmEquipCard('${cardId}', '${tier}')">Equip Card</button>`;
-  } else if (mode === 'equipped') {
-    actionBtnHTML = `<button class="inspect-action-btn unequip" onclick="confirmUnequipCard(${slotIndex})">Unequip</button>`;
-  }
+ return `
+ <li class="cost-item ${isMet ? 'met' : 'missing'}">
+ <span class="item-name">${itemName}</span>
+ <span class="item-amount">${needed} / ${owned}</span>
+ </li>
+ `;
+ })
+ .filter(Boolean)
+ .join('');
 
-  tooltip.innerHTML = `
-    <span class="inspect-close-btn" onclick="hideCardTooltip()">✕</span>
-    <strong>${tool.name} (${tier.toUpperCase()})</strong><br>
-    <em>"${tool.Description || ''}"</em><br><br>
-    ⚡ <strong>SPM:</strong> +${card.spm}<br>
-    ✨ <strong>Perk:</strong> ${getBonusDescription(card.bonus)}<br>
-    ${timerText}
-    ${costHTML}
-    ${actionBtnHTML}
-  `;
-  tooltip.style.display = 'block';
+ costHTML = `
+ <div class="card-cost-section">
+ <div class="cost-header">
+ <span>Required</span>
+ <span style="font-size: 0.5rem; opacity: 0.8;">Needed/Owned</span>
+ </div>
+ <ul class="cost-list">
+ ${costItemsHTML}
+ </ul>
+ </div>
+ `;
+}
+
+ // Build the dedicated Action Button based on where you tapped
+ let actionBtnHTML = "";
+ if (mode === 'shop') {
+ actionBtnHTML = `<button class="inspect-action-btn" onclick="confirmBuyCard('${key}', '${tier}')">Trade for Card</button>`;
+ } else if (mode === 'inventory') {
+ actionBtnHTML = `<button class="inspect-action-btn" onclick="confirmEquipCard('${cardId}', '${tier}')">Equip Card</button>`;
+ } else if (mode === 'equipped') {
+ actionBtnHTML = `<button class="inspect-action-btn unequip" onclick="confirmUnequipCard(${slotIndex})">Unequip</button>`;
+ }
+
+ tooltip.innerHTML = `
+ <span class="inspect-close-btn" onclick="hideCardTooltip()">✕</span>
+ <strong>${tool.name} (${tier.toUpperCase()})</strong><br>
+ <em>"${tool.Description || ''}"</em><br><br>
+ ⚡ <strong>SPM:</strong> +${card.spm}<br>
+ ✨ <strong>Perk:</strong> ${getBonusDescription(card.bonus)}<br>
+ ${timerText}
+ ${costHTML}
+ ${actionBtnHTML}
+ `;
+ tooltip.style.display = 'block';
+ tooltip.classList.remove('card-pop-in');
+ void tooltip.offsetWidth; // Force CSS reflow to restart animation
+ tooltip.classList.add('card-pop-in');
 }
 
 function hideCardTooltip() {
   const tooltip = document.getElementById('global-card-tooltip');
-  if (tooltip) tooltip.style.display = 'none';
+  if (tooltip && tooltip.style.display === 'block') {
+    tooltip.classList.remove('card-pop-in');
+    tooltip.classList.add('card-pop-out');
+    setTimeout(() => {
+      tooltip.style.display = 'none';
+      tooltip.classList.remove('card-pop-out');
+    }, 200);
+  }
 }
 
 // --- RENDER NOTION CARDS IN SHOP ---
@@ -514,13 +547,21 @@ function updateUI() {
 
 // --- CLOSE ALL DRAWERS HELPER ---
 window.closeAllDrawers = function() {
-  document.querySelectorAll(".tab-content").forEach(tab => tab.style.display = "none");
+  document.querySelectorAll(".tab-content:not(#global-card-tooltip)").forEach(tab => {
+    if (tab.style.display === "block") {
+      tab.classList.remove('slide-in');
+      tab.classList.add('slide-out');
+      setTimeout(() => {
+        tab.style.display = "none";
+        tab.classList.remove('slide-out');
+      }, 200);
+    }
+  });
   document.querySelectorAll(".dock-btn").forEach(b => b.classList.remove("active"));
   const menuBtn = document.getElementById("menu-toggle-btn");
   if (menuBtn) menuBtn.classList.remove("active");
 };
 
-// --- TAB SWITCHING (Renders contents dynamically on open) ---
 function switchTab(tabId, btnId) {
   const target = document.getElementById(tabId);
   const btn = document.getElementById(btnId);
@@ -528,18 +569,20 @@ function switchTab(tabId, btnId) {
 
   const isAlreadyOpen = target.style.display === "block";
 
-  // Close all open drawers first
   closeAllDrawers();
+  hideCardTooltip();
 
   if (!isAlreadyOpen) {
     target.style.display = "block";
+    target.classList.remove('slide-out', 'slide-in');
+    void target.offsetWidth; // Force reflow
+    target.classList.add('slide-in');
     if (btn) btn.classList.add("active");
 
-    // Render contents on open!
     if (tabId === 'tab-notions') renderNotionsTab();
     if (tabId === 'tab-crafting') {
       renderCrafting();
-      updateCraftingProgress(); // Instantly show active timers & progress bars!
+      updateCraftingProgress();
     }
     if (tabId === 'tab-shop') {
       renderShop();
@@ -1082,3 +1125,19 @@ if (clickerBtn) {
     }
   });
 }
+
+window.closeAllDrawers = function() {
+  document.querySelectorAll(".tab-content:not(#global-card-tooltip)").forEach(tab => {
+    if (tab.style.display === "block") {
+      tab.classList.remove('slide-in');
+      tab.classList.add('slide-out');
+      setTimeout(() => {
+        tab.style.display = "none";
+        tab.classList.remove('slide-out');
+      }, 200);
+    }
+  });
+  document.querySelectorAll(".dock-btn").forEach(b => b.classList.remove("active"));
+  const menuBtn = document.getElementById("menu-toggle-btn");
+  if (menuBtn) menuBtn.classList.remove("active");
+};

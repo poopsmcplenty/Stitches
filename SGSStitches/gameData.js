@@ -6,9 +6,9 @@ const GAME_DATA = {
   // [Stitch Cost]
   craftables: {
     coaster:   { name: "Coaster",            cost: 50,    craftTime: 10 },   // 10 seconds
-    stdBowl:   { name: "Standard Rope Bowl", cost: 200,   craftTime: 30 },   // 30 seconds
-    rainbowl:  { name: "Rainbowl Rope Bowl", cost: 1000,  craftTime: 300 },  // 300 seconds
-    largeBowl: { name: "Large Rope Bowl",    cost: 5000,  craftTime: 900 },  // 900 seconds
+    stdBowl:   { name: "Rope Bowl", cost: 200,   craftTime: 30 },   // 30 seconds
+    rainbowl:  { name: "Rainbowl",           cost: 1000,  craftTime: 300 },  // 300 seconds
+    largeBowl: { name: "Rope Basket",        cost: 5000,  craftTime: 900 },  // 900 seconds
     fabric:    { name: "Fabric",             cost: 20000, craftTime: 1800 }  // 1800 seconds
   },
 
@@ -18,7 +18,7 @@ const GAME_DATA = {
     stdMachine:   { name: "Standard Machine",    spm: 1,  cost: 1,  cap: null },
     hdMachine:    { name: "Heavy Duty Machine",  spm: 5,  cost: 5,  cap: null },
     comMachine:   { name: "Commercial Machine",  spm: 20, cost: 20, cap: null },
-    bobbinWinder: { name: "Auto Bobbin Winder",  spm: 2,  cost: 30, cap: "machinesOwned" },
+    bobbinWinder: { name: "Bobbin Winder",  spm: 2,  cost: 30, cap: "machinesOwned" },
     Threadtower:  { name: "Thread Tower",        spm:2,   cost: 30, cap: "machinesOwned"}
   },
 
