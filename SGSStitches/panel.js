@@ -50,7 +50,6 @@ let cardTimers = {}; // Tracks { cardId: { activeUntil: 0, readyAt: 0 } }
 // UI Elements
 const scoreEl = document.getElementById('score');
 const ppsEl = document.getElementById('pps');
-const statusEl = document.getElementById('status');
 const clickBtn = document.getElementById('click-btn');
 
 function initApp() {
@@ -58,14 +57,14 @@ function initApp() {
     window.Twitch.ext.onAuthorized((auth) => {
       authData = auth;
       userId = auth.userId;
-      if (statusEl) statusEl.innerText = `Connected! User: ${userId}`;
+      
       checkUserStatus();
     });
   }
 
   setTimeout(() => {
     if (!authData) {
-      if (statusEl) statusEl.innerText = `Running in Local Test Mode`;
+
       checkUserStatus();
     }
   }, 500);
@@ -103,6 +102,9 @@ async function initGame() {
 }
 
 function showJoin() {
+  const notify = document.getElementById('game-notify');
+  if (notify) notify.style.display = 'none';
+
   const join = document.getElementById('join-container');
   if (join) join.style.display = 'block';
 
@@ -114,6 +116,9 @@ function showJoin() {
 }
 
 function showGame() {
+  const notify = document.getElementById('game-notify');
+  if (notify) notify.style.display = 'none';
+
   const join = document.getElementById('join-container');
   if (join) join.style.display = 'none';
 
@@ -144,57 +149,65 @@ function getTotalSPM() {
 
 // --- DATABASE FUNCTIONS ---
 async function loadUserData() {
-  try {
-    const docRef = db.collection("players").doc(userId);
-    const doc = await docRef.get();
+ try {
+ const docRef = db.collection("players").doc(userId);
+ const doc = await docRef.get();
 
-    if (doc.exists) {
-      const d = doc.data();
-      score = Number(d.score) || 0;
-      totalPointsEarned = Number(d.totalPointsEarned) || score;
-      ropeBowlsCount = Number(d.ropeBowlsCount) || 0;
-      shopInventory = d.shopInventory || {};
-      craftInventory = d.craftInventory || {};
-      lifetimeCrafted = d.lifetimeCrafted || {};
-      ropeBowlsCount = craftInventory.stdBowl || 0;
-      activeCrafts = d.activeCrafts || {};
-      equippedSlots = d.equippedSlots || [null, null, null, null];
-      cardTimers = d.cardTimers || {};
-    }
-    updateUI();
-  } catch (err) {
-    console.error("Firebase load error:", err);
-  }
+ if (doc.exists) {
+ const d = doc.data();
+ // Only overwrite if cloud score is greater than or equal to local score
+ score = Math.max(score, Number(d.score) || 0);
+ totalPointsEarned = Math.max(totalPointsEarned, Number(d.totalPointsEarned) || score);
+ ropeBowlsCount = Number(d.ropeBowlsCount) || 0;
+ shopInventory = d.shopInventory || {};
+ craftInventory = d.craftInventory || {};
+ lifetimeCrafted = d.lifetimeCrafted || {};
+ ropeBowlsCount = craftInventory.stdBowl || 0;
+ activeCrafts = d.activeCrafts || {};
+ equippedSlots = d.equippedSlots || [null, null, null, null];
+ cardTimers = d.cardTimers || {};
+ }
+ updateUI();
+ } catch (err) {
+ console.error("Firebase load error:", err);
+ }
 }
 
 async function saveUserData() {
-  if (!gameStarted) return; // Prevent overwriting when quit!
+ if (!gameStarted) return; 
 
-  try {
-    const dataToSave = {
-      score: Number(score) || 0,
-      totalPointsEarned: Number(totalPointsEarned) || 0,
-      hasJoined: true,
-      lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-      ropeBowlsCount: Number(ropeBowlsCount) || 0,
-      shopInventory: shopInventory,
-      craftInventory: craftInventory,
-      lifetimeCrafted: lifetimeCrafted,
-      activeCrafts: activeCrafts,
-      equippedSlots: equippedSlots,
-      cardTimers: cardTimers,
-    };
+ try {
+ const docRef = db.collection("players").doc(userId);
+ const doc = await docRef.get();
+ 
+ // Safety Guard: Prevent saving zero over an existing higher score unless explicitly intended
+ if (doc.exists) {
+ const cloudData = doc.data();
+ if ((cloudData.score || 0) > score && score === 0) {
+ console.warn("Aborted save: Attempted to overwrite existing progress with zero.");
+ return;
+ }
+ }
 
-    await db.collection("players").doc(userId).set(dataToSave, { merge: true });
-    showNotify("Game Saved!");
-    const saveMsg = document.getElementById("save-status");
-    if (saveMsg) {
-      saveMsg.style.opacity = "1";
-      setTimeout(() => { saveMsg.style.opacity = "0"; }, 2000);
-    }
-  } catch (err) {
-    console.error("Firebase save error:", err);
-  }
+ const dataToSave = {
+ score: Number(score) || 0,
+ totalPointsEarned: Number(totalPointsEarned) || 0,
+ hasJoined: true,
+ lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+ ropeBowlsCount: Number(ropeBowlsCount) || 0,
+ shopInventory: shopInventory,
+ craftInventory: craftInventory,
+ lifetimeCrafted: lifetimeCrafted,
+ activeCrafts: activeCrafts,
+ equippedSlots: equippedSlots,
+ cardTimers: cardTimers,
+ };
+
+ await docRef.set(dataToSave, { merge: true });
+ showNotify("Game Saved!");
+ } catch (err) {
+ console.error("Firebase save error:", err);
+ }
 }
 
 let passiveInterval = null;
@@ -1100,13 +1113,14 @@ if (clickerBtn) {
       });
 
       // Randomized burst wrapper
-      const burstWrapper = document.createElement('div');
-      burstWrapper.style.position = 'absolute';
-      burstWrapper.style.top = '75%';
-      burstWrapper.style.left = '50%';
-      burstWrapper.style.pointerEvents = 'none';
-      burstWrapper.style.zIndex = '2';
-      burstWrapper.style.transform = `rotate(${Math.random() * 360}deg)`;
+    const burstWrapper = document.createElement('div');
+    burstWrapper.style.position = 'absolute';
+    burstWrapper.style.top = '75%';
+    burstWrapper.style.left = '50%';
+    burstWrapper.style.pointerEvents = 'none';
+    burstWrapper.style.zIndex = '2';
+    burstWrapper.style.setProperty('--spin', Math.random() < 0.5 ? '1' : '-1');
+    burstWrapper.style.transform = `rotate(${Math.random() * 360}deg)`;
 
       const burst = document.createElement('div');
       burst.className = 'click-ember-burst';
@@ -1126,18 +1140,6 @@ if (clickerBtn) {
   });
 }
 
-window.closeAllDrawers = function() {
-  document.querySelectorAll(".tab-content:not(#global-card-tooltip)").forEach(tab => {
-    if (tab.style.display === "block") {
-      tab.classList.remove('slide-in');
-      tab.classList.add('slide-out');
-      setTimeout(() => {
-        tab.style.display = "none";
-        tab.classList.remove('slide-out');
-      }, 200);
-    }
-  });
   document.querySelectorAll(".dock-btn").forEach(b => b.classList.remove("active"));
   const menuBtn = document.getElementById("menu-toggle-btn");
   if (menuBtn) menuBtn.classList.remove("active");
-};
