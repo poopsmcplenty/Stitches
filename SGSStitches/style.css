@@ -851,3 +851,120 @@ body, html {
 .tab-content.slide-out {
   animation: drawerSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ==========================================================================
+ 7. CRAFTING RECIPE BOOK & FOLDER TABS
+ ========================================================================== */
+/* Inline Top Header for Crafting Tab (Stitches + Close X) */
+.crafting-top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 4px 6px 4px;
+}
+
+.crafting-stitches-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.drawer-close-btn-inline {
+  color: #adadb8;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.drawer-close-btn-inline:hover {
+  color: #ff5555;
+  transform: scale(1.15);
+}
+
+/* Inventory Shelf Row */
+.crafting-inventory-shelf {
+  background: #1f1f23;
+  border: 1px solid #46464f;
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 10px;
+}
+
+.inventory-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.inv-slot {
+  background: #121214;
+  border: 1px solid #3a3a44;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 2px;
+  font-size: 0.7rem;
+  color: #00f0ff;
+}
+.tab-content {
+  overflow-y: auto;
+  max-height: 400px;
+}
+.crafting-top-header,
+.crafting-inventory-shelf,
+.recipe-tabs-container {
+  position: sticky;
+  top: 0;
+  background: #18181b;
+  z-index: 10;
+}
+/* Taller Recipe Book Body */
+.recipe-book-body {
+  background: #26262c;
+  border: 1px solid #46464f;
+  border-radius: 0 6px 6px 6px;
+  padding: 10px;
+  min-height: 310px;
+  box-sizing: border-box;
+}
+
+.recipe-tabs-container {
+  display: flex;
+  gap: 2px;
+  padding-left: 4px;
+  position: relative;
+  z-index: 2;
+}
+
+.recipe-tab {
+  background: #18181b;
+  border: 1px solid #46464f;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  color: #adadb8;
+  font-size: 0.6rem;
+  font-weight: bold;
+  padding: 4px 10px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.recipe-tab.active {
+  background: #26262c;
+  color: #ffffff;
+  border-color: #46464f;
+  border-bottom: 2px solid #26262c;
+}
+
+.recipe-book-body {
+  background: #26262c;
+  border: 1px solid #46464f;
+  border-radius: 0 6px 6px 6px;
+  padding: 8px;
+  min-height: 220px;
+  box-sizing: border-box;
+}

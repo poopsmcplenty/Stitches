@@ -73,19 +73,19 @@
     <div class="bottom-dock-nav">
       <!-- 1. Crafting Tab Button -->
       <button id="nav-crafting" class="dock-btn">
-        <span class="dock-icon"><img src="images/sewingmachine.png" class="dock-img" alt="Shop" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1px 1px rgba(81, 81, 81, 0.9)) contrast(1.15);"></span>
+        <span class="dock-icon"><img src="images/sewingmachine.png" class="dock-img" alt="Shop" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(117, 67, 67, 0.9)) contrast(1.15);"></span>
         <span class="dock-label">Craft</span>
       </button>
 
       <!-- 2. Notions Tab Button -->
       <button id="nav-notions" class="dock-btn">
-        <span class="dock-icon"><img src="images/mystuff.png" class="dock-img" alt="Shop" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1px 5px rgba(163, 94, 94, 0.9)) contrast(1.15);"></span>
+        <span class="dock-icon"><img src="images/mystuff.png" class="dock-img" alt="Shop" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(163, 94, 94, 0.9)) contrast(1.15);"></span>
         <span class="dock-label">My Stuff</span>
       </button>
 
       <!-- 3. Shop Tab Button -->
       <button id="nav-shop" class="dock-btn">
-        <span class="dock-icon"><img src="images/shopbag.png" class="dock-img" alt="Shop" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1px 5px rgba(163, 94, 94, 0.9)) contrast(1.15);"></span>
+        <span class="dock-icon"><img src="images/shopbag.png" class="dock-img" alt="Shop" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(163, 94, 94, 0.9)) contrast(1.15);"></span>
         <span class="dock-label">Shop</span>
       </button>
     </div>
@@ -101,24 +101,87 @@
     </div>
 
     <!-- 2. Crafting Tab Drawer -->
-    <div id="tab-crafting" class="tab-content" style="display:none;">
-      <span class="drawer-close-btn" onclick="closeAllDrawers()">✕</span>
-      <h3>Crafting</h3>
-      <div id="crafting-items-container"></div>
-    </div>
+  <div id="tab-crafting" class="tab-content" style="display:none;">
+   <!-- Top Header Line: Stitches Counter & Close Button -->
+   <div class="crafting-top-header">
+     <div class="crafting-stitches-inline">
+       <span style="font-size: 0.6rem; color: #adadb8; text-transform: uppercase;">Stitches:</span>
+       <span id="crafting-tab-score" style="font-size: 0.95rem; font-weight: 900; color: #ffffff;">0</span>
+     </div>
+     <span class="drawer-close-btn-inline" onclick="closeAllDrawers()">✕</span>
+   </div>
+
+   <!-- Inventory Shelf Row Below -->
+   <div class="crafting-inventory-shelf">
+     <div class="inventory-slots-grid">
+       <div class="inv-slot"><span style="font-size:0.5rem">Coaster</span><span id="owned-coaster">0</span></div>
+       <div class="inv-slot"><span style="font-size:0.5rem">Bowl</span><span id="owned-stdBowl">0</span></div>
+       <div class="inv-slot"><span style="font-size:0.5rem">Rainbowl</span><span id="owned-rainbowl">0</span></div>
+       <div class="inv-slot"><span style="font-size:0.5rem">Basket</span><span id="owned-largeBowl">0</span></div>
+       <div class="inv-slot"><span style="font-size:0.5rem">Fabric</span><span id="owned-fabric">0</span></div>
+     </div>
+   </div>
+
+   <!-- Category Folder Tabs -->
+   <div class="recipe-tabs-container">
+     <button class="recipe-tab active" onclick="switchCraftCategory('rope', this)">ROPE</button>
+     <button class="recipe-tab" onclick="switchCraftCategory('fabric', this)">FABRIC</button>
+     <button class="recipe-tab" onclick="switchCraftCategory('decor', this)">DECOR</button>
+     <button class="recipe-tab" onclick="switchCraftCategory('buttons', this)">BUTTONS</button>
+   </div>
+
+   <!-- Recipe Book Body -->
+   <div class="recipe-book-body">
+     <div id="crafting-items-container"></div>
+   </div>
+ </div>
 
     <!-- 3. Shop Tab Drawer -->
-    <div id="tab-shop" class="tab-content" style="display:none;">
-      <span class="drawer-close-btn" onclick="closeAllDrawers()">✕</span>
-      <h3 id="toggle-machines" class="collapsible-header">
-        <span>Machines & Equipment</span>
-        <span id="machines-arrow">▼</span>
-      </h3>
-      <div id="shop-items-container"></div>
+ <div id="tab-shop" class="tab-content" style="display:none;">
+   <!-- Top Header Line: Stitches Counter & Close Button -->
+   <div class="crafting-top-header">
+     <div class="crafting-stitches-inline">
+       <span style="font-size: 0.6rem; color: #adadb8; text-transform: uppercase;">Stitches:</span>
+       <span id="shop-tab-score" style="font-size: 0.95rem; font-weight: 900; color: #ffffff;">0</span>
+     </div>
+     <span class="drawer-close-btn-inline" onclick="closeAllDrawers()">✕</span>
+   </div>
 
-      <h3>Notion Cards</h3>
-      <div id="shop-notions-container" class="notions-grid"></div>
-    </div>
+   <!-- Inventory Shelf Row Below -->
+   <div class="crafting-inventory-shelf">
+     <div class="inventory-slots-grid">
+       <div class="inv-slot"><span style="font-size:0.5rem">Coaster</span><span id="shop-owned-coaster">0</span></div>
+       <div class="inv-slot"><span style="font-size:0.5rem">Bowl</span><span id="shop-owned-stdBowl">0</span></div>
+       <div class="inv-slot"><span style="font-size:0.5rem">Rainbowl</span><span id="shop-owned-rainbowl">0</span></div>
+       <div class="inv-slot"><span style="font-size:0.5rem">Basket</span><span id="shop-owned-largeBowl">0</span></div>
+       <div class="inv-slot"><span style="font-size:0.5rem">Fabric</span><span id="shop-owned-fabric">0</span></div>
+     </div>
+   </div>
+
+   <!-- Category Folder Tabs -->
+   <div class="recipe-tabs-container">
+     <button class="recipe-tab active" onclick="switchShopCategory('machines', this)">MACHINES</button>
+     <button class="recipe-tab" onclick="switchShopCategory('cards', this)">CARDS</button>
+     <button class="recipe-tab" onclick="switchShopCategory('blueprints', this)">BLUEPRINTS</button>
+   </div>
+
+   <!-- Shop Book Body -->
+   <div class="recipe-book-body">
+     <div id="shop-category-machines" class="shop-category-section">
+      
+   <div class="crafting-inventory-shelf">
+     <div class="inventory-slots-grid" id="shop-inventory-slots"></div>
+   </div>
+       <div id="shop-items-container"></div>
+     </div>
+     <div id="shop-category-cards" class="shop-category-section" style="display: none;">
+       <div id="shop-notions-container" class="notions-grid"></div>
+     </div>
+     <div id="shop-category-blueprints" class="shop-category-section" style="display: none;">
+       <div style="text-align:center; color:#adadb8; font-size:0.75rem; padding:20px;">Blueprints coming soon! Unlock decor and button recipes here.</div>
+     </div>
+   </div>
+ </div>
 
     <!-- 4. Menu / Settings Tab Drawer -->
     <div id="tab-menu" class="tab-content" style="display:none;">

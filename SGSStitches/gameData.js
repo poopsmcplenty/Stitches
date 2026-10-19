@@ -3,13 +3,13 @@ const GAME_DATA = {
   baseSPM: 1,
 
   // --- CRAFTABLES ---
-  // [Stitch Cost]
+  // [Stitch Cost, Craft Time, Category]
   craftables: {
-    coaster:   { name: "Coaster",            cost: 50,    craftTime: 10 },   // 10 seconds
-    stdBowl:   { name: "Rope Bowl",          cost: 200,   craftTime: 30 },   // 30 seconds
-    rainbowl:  { name: "Rainbowl",           cost: 1000,  craftTime: 300 },  // 300 seconds
-    largeBowl: { name: "Rope Basket",        cost: 5000,  craftTime: 900 },  // 900 seconds
-    fabric:    { name: "Fabric",             cost: 20000, craftTime: 1800 }  // 1800 seconds
+    coaster:    { name: "Coaster",     cost: 50,    craftTime: 10,   category: "rope" },
+    stdBowl:    { name: "Rope Bowl",   cost: 200,   craftTime: 30,   category: "rope" },
+    rainbowl:   { name: "Rainbowl",    cost: 1000,  craftTime: 300,  category: "rope" },
+    largeBowl:  { name: "Rope Basket", cost: 5000,  craftTime: 900,  category: "rope" },
+    fabric:     { name: "Fabric",      cost: 20000, craftTime: 1800, category: "fabric" }
   },
 
   // --- SHOP (MACHINES & POWER-UPS) ---

@@ -20,13 +20,57 @@ const configCheck = setInterval(() => {
   }
 }, 50);
 
+let notificationQueue = [];
+let isShowingNotification = false;
+
 function showNotify(text, isError = false) {
-  const el = document.getElementById("game-notify");
-  if (!el) return;
+  notificationQueue.push({ text, isError });
+  processNotificationQueue();
+}
+
+function processNotificationQueue() {
+  if (isShowingNotification || notificationQueue.length === 0) return;
+
+  isShowingNotification = true;
+  const { text, isError } = notificationQueue.shift();
+
+  const existing = document.getElementById("dynamic-game-notify");
+  if (existing) existing.remove();
+
+  const el = document.createElement("div");
+  el.id = "dynamic-game-notify";
   el.innerText = text;
-  el.style.color = isError ? "#ff5555" : "#00ff88";
+
+  el.style.position = "fixed";
+  el.style.top = "16px";
+  el.style.left = "50%";
+  el.style.transform = "translateX(-50%)";
+  el.style.background = "rgba(24, 24, 27, 0.95)";
+  el.style.border = isError ? "1px solid #ff5555" : "1px solid #9146ff";
+  el.style.color = isError ? "#ff5555" : "#ffffff";
+  el.style.padding = "8px 16px";
+  el.style.borderRadius = "8px";
+  el.style.fontSize = "0.75rem";
+  el.style.fontWeight = "bold";
+  el.style.zIndex = "999999";
+  el.style.boxShadow = "0 4px 20px rgba(0, 0, 0, 0.8)";
+  el.style.pointerEvents = "none";
+  el.style.textAlign = "center";
+  el.style.whiteSpace = "nowrap";
+  el.style.transition = "opacity 0.2s ease-in-out";
   el.style.opacity = "1";
-  setTimeout(() => { el.style.opacity = "0"; }, 2500);
+
+  document.body.appendChild(el);
+
+  // Keep it visible for 2.5 seconds, then fade out and pull the next one from the queue
+  setTimeout(() => {
+    el.style.opacity = "0";
+    setTimeout(() => {
+      el.remove();
+      isShowingNotification = false;
+      processNotificationQueue();
+    }, 200);
+  }, 2500);
 }
 
 // --- GAME STATE ---
@@ -46,7 +90,26 @@ let lifetimeCrafted = {};  // Tracks total ever made
 let activeCrafts = {}; // e.g. { coaster: { finishTime: 171000000, qty: 1 } }
 let equippedSlots = [null, null, null, null]; // [Slot 1, Slot 2, Slot 3, Slot 4]
 let cardTimers = {}; // Tracks { cardId: { activeUntil: 0, readyAt: 0 } }
+let currentCraftCategory = 'rope';
 
+window.switchCraftCategory = function(category, btnEl) {
+  currentCraftCategory = category;
+  document.querySelectorAll('.recipe-tab').forEach(t => t.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  renderCrafting();
+};
+window.switchShopCategory = function(category, btnEl) {
+  document.querySelectorAll('#tab-shop .recipe-tab').forEach(t => t.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  
+  const machinesSec = document.getElementById('shop-category-machines');
+  const cardsSec = document.getElementById('shop-category-cards');
+  const blueprintsSec = document.getElementById('shop-category-blueprints');
+  
+  if (machinesSec) machinesSec.style.display = (category === 'machines') ? 'block' : 'none';
+  if (cardsSec) cardsSec.style.display = (category === 'cards') ? 'block' : 'none';
+  if (blueprintsSec) blueprintsSec.style.display = (category === 'blueprints') ? 'block' : 'none';
+};
 // UI Elements
 const scoreEl = document.getElementById('score');
 const ppsEl = document.getElementById('pps');
@@ -528,18 +591,28 @@ function updateUI() {
   // Main Header UI
   if (scoreEl) scoreEl.innerText = score;
   if (ppsEl) ppsEl.innerText = totalSpm;
-  
+  if (document.getElementById('crafting-tab-score')) {
+    document.getElementById('crafting-tab-score').innerText = score;
+  }
+  if (document.getElementById('shop-tab-score')) {
+    document.getElementById('shop-tab-score').innerText = score;
+  }
   // Stats Menu
   if (document.getElementById('stat-user')) document.getElementById('stat-user').innerText = userId;
   if (document.getElementById('stat-total-stitches')) document.getElementById('stat-total-stitches').innerText = totalPointsEarned;
   if (document.getElementById('stat-total-spm')) document.getElementById('stat-total-spm').innerText = totalSpm;
   for (const key of Object.keys(GAME_DATA.craftables)) {
-  const ownedEl = document.getElementById(`owned-${key}`);
-  if (ownedEl) ownedEl.innerText = craftInventory[key] || 0;
+    const ownedEl = document.getElementById(`owned-${key}`);
+    if (ownedEl) ownedEl.innerText = craftInventory[key] || 0;
+    
+    const shopOwnedEl = document.getElementById(`shop-owned-${key}`);
+    if (shopOwnedEl) shopOwnedEl.innerText = craftInventory[key] || 0;
   }
   for (const key of Object.keys(GAME_DATA.shopItems)) {
-  const el = document.getElementById(`owned-shop-${key}`);
-  if (el) el.innerText = shopInventory[key] || 0;
+    const el = document.getElementById(`owned-shop-${key}`);
+    if (el) el.innerText = shopInventory[key] || 0;
+  }
+
   // Dynamic HUD: Machines (Pulls directly from gameData.js)
   const mList = document.getElementById('hud-machines-list');
   if (mList) {
@@ -555,7 +628,6 @@ function updateUI() {
       .map(([key, item]) => `<div class="hud-item"><span>${item.name.split(' ')[0]}:</span> <strong>${craftInventory[key] || 0}</strong></div>`)
       .join('');
   }
-}
 }
 
 // --- CLOSE ALL DRAWERS HELPER ---
@@ -623,7 +695,7 @@ function renderShop() {
       <div class="craft-info">
         <strong>${item.name}</strong>
         <span>+${item.spm} SPM</span>
-        <small>Cost: ${item.cost} Std Bowl${item.cost > 1 ? 's' : ''} | Owned: <span id="owned-shop-${key}">0</span></small>
+        <small>Cost: ${item.cost} Rope Bowl${item.cost > 1 ? 's' : ''}</small>
       </div>
       <div class="craft-controls">
         <input type="number" id="qty-shop-${key}" value="1" min="1" class="craft-qty-input">
@@ -633,7 +705,12 @@ function renderShop() {
     container.appendChild(row);
   }
 }
-
+const shopSlotsContainer = document.getElementById('shop-inventory-slots');
+if (shopSlotsContainer) {
+  shopSlotsContainer.innerHTML = Object.entries(GAME_DATA.shopItems)
+    .map(([key, item]) => `<div class="inv-slot"><span style="font-size:0.5rem">${item.name.split(' ')[0]}</span><span id="owned-shop-${key}">0</span></div>`)
+    .join('');
+}
 function buyShopItem(key) {
   const item = GAME_DATA.shopItems[key];
   if (!item) return;
@@ -676,8 +753,13 @@ function renderCrafting() {
   container.innerHTML = '';
 
   const perks = getActiveNotionBonuses();
+  let hasItems = false;
 
   for (const [key, item] of Object.entries(GAME_DATA.craftables)) {
+    // Filter by selected tab category (defaults to 'rope')
+    if ((item.category || 'rope') !== currentCraftCategory) continue;
+    hasItems = true;
+
     const discountedCost = Math.max(1, Math.floor(item.cost * (1 - perks.craftCostDiscount)));
     const discountedTime = Math.max(1, Math.floor(item.craftTime * (1 - perks.craftTimeDiscount)));
 
@@ -694,7 +776,6 @@ function renderCrafting() {
         <div class="craft-info">
           <strong>${item.name}</strong>
           <span>${costText} (${discountedTime}s)</span>
-          <small>Owned: <span id="owned-${key}">0</span></small>
         </div>
         <div class="craft-controls">
           <input type="number" id="qty-${key}" value="1" min="1" class="craft-qty-input">
@@ -707,6 +788,10 @@ function renderCrafting() {
       <div id="timer-text-${key}" class="craft-timer-text">Crafting...</div>
     `;
     container.appendChild(row);
+  }
+
+  if (!hasItems) {
+    container.innerHTML = '<div style="text-align:center; color:#adadb8; font-size:0.75rem; padding:20px;">No recipes in this category yet!</div>';
   }
 }
 function startCrafting(key) {
