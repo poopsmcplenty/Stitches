@@ -102,7 +102,7 @@ window.switchCraftCategory = function(category, btnEl) {
 const notionsMachinesSlots = document.getElementById('notions-machines-slots');
 if (notionsMachinesSlots) {
  notionsMachinesSlots.innerHTML = Object.entries(GAME_DATA.shopItems)
- .map(([key, item]) => `<div class="inv-slot"><span style="font-size:0.5rem">${item.name.split(' ')[0]}</span><span id="owned-shop-${key}">0</span></div>`)
+ .map(([key, item]) => `<div class="inv-slot"><span style="font-size:0.5rem">${item.name.split(' ')[0]}</span><span id="owned-machines-${key}">0</span></div>`)
  .join('');
 }
 window.switchNotionsCategory = function(category, btnEl) {
@@ -630,6 +630,9 @@ function updateUI() {
   for (const key of Object.keys(GAME_DATA.shopItems)) {
     const el = document.getElementById(`owned-shop-${key}`);
     if (el) el.innerText = shopInventory[key] || 0;
+
+    const notionEl = document.getElementById(`owned-machines-${key}`);
+    if (notionEl) notionEl.innerText = shopInventory[key] || 0;
   }
 
   // Dynamic HUD: Machines (Pulls directly from gameData.js)
