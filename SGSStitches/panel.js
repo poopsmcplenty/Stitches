@@ -99,6 +99,24 @@ window.switchCraftCategory = function(category, btnEl) {
   if (btnEl) btnEl.classList.add('active');
   renderCrafting();
 };
+const notionsMachinesSlots = document.getElementById('notions-machines-slots');
+if (notionsMachinesSlots) {
+ notionsMachinesSlots.innerHTML = Object.entries(GAME_DATA.shopItems)
+ .map(([key, item]) => `<div class="inv-slot"><span style="font-size:0.5rem">${item.name.split(' ')[0]}</span><span id="owned-shop-${key}">0</span></div>`)
+ .join('');
+}
+window.switchNotionsCategory = function(category, btnEl) {
+ document.querySelectorAll('#tab-notions .recipe-tab').forEach(t => t.classList.remove('active'));
+ if (btnEl) btnEl.classList.add('active');
+
+ const cardsSec = document.getElementById('notions-category-cards');
+ const decorSec = document.getElementById('notions-category-decor');
+ const buttonsSec = document.getElementById('notions-category-buttons');
+
+ if (cardsSec) cardsSec.style.display = (category === 'cards') ? 'block' : 'none';
+ if (decorSec) decorSec.style.display = (category === 'decor') ? 'block' : 'none';
+ if (buttonsSec) buttonsSec.style.display = (category === 'buttons') ? 'block' : 'none';
+};
 window.switchShopCategory = function(category, btnEl) {
   document.querySelectorAll('#tab-shop .recipe-tab').forEach(t => t.classList.remove('active'));
   if (btnEl) btnEl.classList.add('active');
@@ -512,7 +530,7 @@ function renderShopNotions() {
       if (!card) return;
 
       const cardId = `${key}_${tier}`;
-      const maxLimit = (tier === 'bronze') ? 4 : 1;
+      const maxLimit = 1;
       const currentOwned = craftInventory[cardId] || 0;
       const isMaxed = currentOwned >= maxLimit;
 
@@ -552,7 +570,7 @@ function buyNotionCard(key, tier) {
   if (!card) return;
 
   const cardId = `${key}_${tier}`;
-  const maxLimit = (tier === 'bronze') ? 4 : 1;
+  const maxLimit = 1;
   const currentOwned = craftInventory[cardId] || 0;
 
   // 1. Check Ownership Cap Rule

@@ -94,11 +94,49 @@
          6. TAB OVERLAYS / DRAWERS
          ==================================================================== -->
     <!-- 1. Notions Tab Drawer -->
-    <div id="tab-notions" class="tab-content" style="display:none;">
-      <span class="drawer-close-btn" onclick="closeAllDrawers()">✕</span>
-      <h3>Owned Notions</h3>
-      <div id="owned-notions-list"></div>
-    </div>
+ <div id="tab-notions" class="tab-content" style="display:none;">
+ <div class="crafting-top-header">
+ <div class="crafting-stitches-inline">
+ <span style="font-size: 0.6rem; color: #adadb8; text-transform: uppercase;">Notions</span>
+ </div>
+ <span class="drawer-close-btn-inline" onclick="closeAllDrawers()">✕</span>
+ </div>
+
+ <!-- Inventory Shelf Row -->
+ <div class="crafting-inventory-shelf">
+ <div class="inventory-slots-grid">
+ <div class="inv-slot"><span style="font-size:0.5rem">Coaster</span><span id="owned-coaster">0</span></div>
+ <div class="inv-slot"><span style="font-size:0.5rem">Bowl</span><span id="owned-stdBowl">0</span></div>
+ <div class="inv-slot"><span style="font-size:0.5rem">Rainbowl</span><span id="owned-rainbowl">0</span></div>
+ <div class="inv-slot"><span style="font-size:0.5rem">Basket</span><span id="owned-largeBowl">0</span></div>
+ <div class="inv-slot"><span style="font-size:0.5rem">Fabric</span><span id="owned-fabric">0</span></div>
+ </div>
+ </div>
+ <!-- Inventory Shelf Row 2 (Machines) -->
+ <div class="crafting-inventory-shelf">
+ <div class="inventory-slots-grid" id="notions-machines-slots"></div>
+ </div>
+
+ <!-- Category Folder Tabs -->
+ <div class="recipe-tabs-container">
+ <button class="recipe-tab active" onclick="switchNotionsCategory('cards', this)">CARDS</button>
+ <button class="recipe-tab" onclick="switchNotionsCategory('decor', this)">DECOR</button>
+ <button class="recipe-tab" onclick="switchNotionsCategory('buttons', this)">BUTTONS</button>
+ </div>
+
+ <!-- Notions Book Body -->
+ <div class="recipe-book-body">
+ <div id="notions-category-cards" class="shop-category-section">
+ <div id="owned-notions-list"></div>
+ </div>
+ <div id="notions-category-decor" class="shop-category-section" style="display: none;">
+ <div style="text-align:center; color:#adadb8; font-size:0.75rem; padding:20px;">Decor inventory coming soon!</div>
+ </div>
+ <div id="notions-category-buttons" class="shop-category-section" style="display: none;">
+ <div style="text-align:center; color:#adadb8; font-size:0.75rem; padding:20px;">Buttons inventory coming soon!</div>
+ </div>
+ </div>
+ </div>
 
     <!-- 2. Crafting Tab Drawer -->
   <div id="tab-crafting" class="tab-content" style="display:none;">
@@ -111,7 +149,7 @@
      <span class="drawer-close-btn-inline" onclick="closeAllDrawers()">✕</span>
    </div>
 
-   <!-- Inventory Shelf Row Below -->
+   <!-- Inventory Shelf Row -->
    <div class="crafting-inventory-shelf">
      <div class="inventory-slots-grid">
        <div class="inv-slot"><span style="font-size:0.5rem">Coaster</span><span id="owned-coaster">0</span></div>
