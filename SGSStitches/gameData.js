@@ -22,6 +22,15 @@ const GAME_DATA = {
     Threadtower:  { name: "Thread Tower",        spm:2,   cost: 30, cap: "machinesOwned"}
   },
 
+  // --- DECOR ---
+  // Craft index: [0: Coaster, 1: Std Bowl, 2: Rainbowl, 3: Large Bowl, 4: Fabric]
+  // [Name, Cost, Craft Time, Category, Image]
+  decor: {
+    sewingWallpaper: { name: "Sewing Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "wallpaper", image: "images/wallpaper_sewing.png" },
+    daisyWallpaper: { name: "Daisy Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "wallpaper", image: "images/wallpaper_daisy.png" },
+    sunsetWallpaper: { name: "Sunset Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "wallpaper", image: "images/wallpaper_sunset.png" }
+  },
+
 // --- NOTIONS ---
   // Craft index: [0: Coaster, 1: Std Bowl, 2: Rainbowl, 3: Large Bowl, 4: Fabric]
   // Bonus: [0: click multiplier, 1: cheaper crafting %, 2: shorter craft time %, 3: cheaper shop %, 4: timed SPM boost]
