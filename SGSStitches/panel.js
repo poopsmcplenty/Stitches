@@ -320,9 +320,16 @@ function startPassiveLoop() {
  score += spm;
  totalPointsEarned += spm;
  updateUI();
- equippedSlots.forEach(cardId => {
- if (!cardId) return;
- const [key] = cardId.split('_');
+
+ const slotElements = document.querySelectorAll('.slots-grid .slot');
+ equippedSlots.forEach((cardId, index) => {
+ if (!cardId || !isCardActive(cardId)) return;
+ const [key, tier] = cardId.split('_');
+ const card = GAME_DATA.notions[key]?.[tier];
+ if (card && card.spm && slotElements[index]) {
+ spawnCardFloatingSPM(slotElements[index], card.spm);
+ }
+
  const tool = GAME_DATA.notions[key];
  const timed = tool?.Timed || tool?.timed || [0, 0];
  if (timed[0] > 0) {
@@ -333,6 +340,7 @@ function startPassiveLoop() {
  }
  }
  });
+
  updateCraftingProgress();
  }, 1000);
 }
@@ -379,7 +387,25 @@ function spawnFloatingText(e, text) {
  el.style.transform = `rotate(${randomRotate}deg)`;
 
  document.body.appendChild(el);
- setTimeout(() => el.remove(), 800);
+ setTimeout(() => el.remove(), 1500);
+}
+
+function spawnCardFloatingSPM(slotEl, spmValue) {
+ const rect = slotEl.getBoundingClientRect();
+ const el = document.createElement('div');
+ el.className = 'floating-click card-floating-spm';
+ el.innerText = `+${spmValue}`;
+ el.style.color = '#00ff88';
+ el.style.fontSize = '0.75rem';
+
+ const randomX = (Math.random() - 0.5) * 24;
+ const randomDriftX = (Math.random() - 0.5) * 20;
+ el.style.setProperty('--drift-x', `${randomDriftX}px`);
+ el.style.left = `${rect.left + rect.width / 2 + randomX}px`;
+ el.style.top = `${rect.top + 5}px`;
+
+ document.body.appendChild(el);
+ setTimeout(() => el.remove(), 2500);
 }
 
 bindClick('join-btn', async () => {
@@ -1340,16 +1366,63 @@ function unequipCard(slotIndex) {
 function activateTimedCard(cardId, timed) {
  const [duration, cooldown] = timed;
  const now = Date.now();
+ const [key, tier] = cardId.split('_');
+ const tool = GAME_DATA.notions[key];
+ const card = tool?.[tier];
 
  cardTimers[cardId] = {
  activeUntil: now + (duration * 1000),
  readyAt: now + ((duration + cooldown) * 1000)
  };
 
- showNotify(`Activated ${cardId.split('_')[0]} boost for ${Math.round(duration / 60)}m!`);
+ const perkText = getBonusDescription(card?.bonus);
+ showPerkBanner(`${tool?.name || 'Card'} Activated!`, perkText);
+
  updateUI();
  renderNotionsTab();
  saveUserData();
+}
+
+function showPerkBanner(title, perkDetail) {
+ const existing = document.getElementById("perk-activation-banner");
+ if (existing) existing.remove();
+
+ const el = document.createElement("div");
+ el.id = "perk-activation-banner";
+ el.innerHTML = `
+ <div style="font-size:0.85rem; font-weight:900; color:#00f0ff;">✨ ${title} ✨</div>
+ <div style="font-size:0.7rem; color:#ffffff; margin-top:2px;">${perkDetail}</div>
+ `;
+
+ el.style.position = "absolute";
+ el.style.top = "180px";
+ el.style.left = "50%";
+ el.style.transform = "translateX(-50%) scale(0.8)";
+ el.style.background = "rgba(18, 18, 20, 0.95)";
+ el.style.border = "2px solid #00f0ff";
+ el.style.borderRadius = "10px";
+ el.style.padding = "10px 16px";
+ el.style.zIndex = "999999";
+ el.style.boxShadow = "0 0 20px rgba(0, 240, 255, 0.6)";
+ el.style.pointerEvents = "none";
+ el.style.textAlign = "center";
+ el.style.whiteSpace = "nowrap";
+ el.style.transition = "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+ el.style.opacity = "0";
+
+ const container = document.querySelector(".container");
+ if (container) container.appendChild(el);
+
+ requestAnimationFrame(() => {
+ el.style.opacity = "1";
+ el.style.transform = "translateX(-50%) scale(1)";
+ });
+
+ setTimeout(() => {
+ el.style.opacity = "0";
+ el.style.transform = "translateX(-50%) scale(0.8)";
+ setTimeout(() => el.remove(), 300);
+ }, 2500);
 }
 
 const clickerBtn = document.querySelector('.round-clicker-btn');
