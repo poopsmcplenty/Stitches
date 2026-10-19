@@ -222,6 +222,14 @@ body, html {
   text-shadow: 0 2px 10px rgba(0, 240, 255, 0.6);
 }
 
+#dynamic-game-notify {
+  position: absolute !important;
+  top: 12px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 999999 !important;
+}
+
 /* ==========================================================================
    4. EQUIPPED CARDS ROW (4 Pinned Slots)
    ========================================================================== */

@@ -41,7 +41,7 @@ function processNotificationQueue() {
   el.id = "dynamic-game-notify";
   el.innerText = text;
 
-  el.style.position = "fixed";
+  el.style.position = "absolute";
   el.style.top = "16px";
   el.style.left = "50%";
   el.style.transform = "translateX(-50%)";
@@ -60,7 +60,8 @@ function processNotificationQueue() {
   el.style.transition = "opacity 0.2s ease-in-out";
   el.style.opacity = "1";
 
-  document.body.appendChild(el);
+  const container = document.querySelector(".container");
+  if (container) container.appendChild(el);
 
   // Keep it visible for 2.5 seconds, then fade out and pull the next one from the queue
   setTimeout(() => {
