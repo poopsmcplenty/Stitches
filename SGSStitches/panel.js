@@ -859,15 +859,12 @@ function renderCrafting() {
  <div id="progress-box-${key}" class="craft-progress-container">
  <div id="progress-bar-${key}" class="craft-progress-bar"></div>
  </div>
- <div id="progress-box-decor_${key}" class="craft-progress-container">
-    <div id="progress-bar-decor_${key}" class="craft-progress-bar"></div>
-</div>
- <div id="timer-text-decor_${key}" class="craft-timer-text">Crafting...</div>
+ <div id="timer-text-${key}" class="craft-timer-text">Crafting...</div>
  `;
  container.appendChild(row);
  }
 
- if (currentCraftCategory === 'decor') {
+if (currentCraftCategory === 'decor') {
  for (const [key, item] of Object.entries(GAME_DATA.decor)) {
  const hasBlueprint = (ownedBlueprints[key] || 0) > 0;
  if (!hasBlueprint) continue;
@@ -893,10 +890,10 @@ function renderCrafting() {
  </button>
  </div>
  </div>
- <div id="progress-box-decor-${key}" class="craft-progress-container">
- <div id="progress-bar-decor-${key}" class="craft-progress-bar"></div>
+ <div id="progress-box-decor_${key}" class="craft-progress-container">
+ <div id="progress-bar-decor_${key}" class="craft-progress-bar"></div>
  </div>
- <div id="timer-text-decor-${key}" class="craft-timer-text">Crafting...</div>
+ <div id="timer-text-decor_${key}" class="craft-timer-text">Crafting...</div>
  `;
  container.appendChild(row);
  }
@@ -993,6 +990,7 @@ function updateCraftingProgress() {
  showNotify(`Completed ${GAME_DATA.decor[craft.decorKey].name}!`);
  updateUI();
  renderCrafting();
+ renderNotionsDecor();
  saveUserData();
  return;
  }

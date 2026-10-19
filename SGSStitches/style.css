@@ -408,7 +408,7 @@ body, html {
   width: 95%;
   max-width: 280px;
   background: rgba(24, 24, 27, 0);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(0px);
   border: 1px solid #3a3a4400;
   border-radius: 14px;
   padding: 4px 6px;
