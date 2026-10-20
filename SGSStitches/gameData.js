@@ -29,7 +29,12 @@ const GAME_DATA = {
     sewingWallpaper: { name: "Sewing Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "decor", image: "images/wallpaper_sewing.png" },
     daisyWallpaper: { name: "Daisy Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "decor", image: "images/wallpaper_daisy.png" },
     sunsetWallpaper: { name: "Sunset Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "decor", image: "images/wallpaper_sunset.png" },
-    yarnballButton: { name: "Yarn Ball Button", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "buttons", image: "images/buttons_yarnball.png", scale: 1.4}
+    halloweendoodle: { name: "Halloween Doodle Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "decor", image: "images/wallpaper_halloweendoodle.png" },
+    halloweencastle: { name: "Halloween Castle Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "decor", image: "images/wallpaper_halloweencastle.png" },
+
+    yarnballButton: { name: "Yarn Ball Button", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "buttons", image: "images/buttons_yarnball.png", scale: 1.4},
+    pumpkinButton: { name: "Pumpkin Button", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "buttons", image: "images/buttons_pumpkin.png", },
+    greencandyButton: { name: "Green Candy Button", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "buttons", image: "images/buttons_greencandy.png", },
   },
 
  
