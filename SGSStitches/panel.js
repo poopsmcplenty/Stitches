@@ -635,66 +635,66 @@ function renderShopNotions() {
 }
 
 function renderShopBlueprints() {
- const container = document.getElementById('shop-category-blueprints');
- if (!container) return;
- container.innerHTML = '';
+  const container = document.getElementById('shop-category-blueprints');
+  if (!container) return;
+  container.innerHTML = '';
 
- const craftNames = ["Coasters", "Std Bowls", "Rainbowls", "Large Bowls", "Fabrics"];
- let hasItems = false;
+  const craftNames = ["Coasters", "Std Bowls", "Rainbowls", "Large Bowls", "Fabrics"];
+  let hasItems = false;
 
- for (const [key, item] of Object.entries(GAME_DATA.decor)) {
- const isOwned = (ownedBlueprints[key] || 0) > 0;
- if (isOwned) continue;
- hasItems = true;
+  for (const [key, item] of Object.entries(GAME_DATA.decor)) {
+    const isOwned = (ownedBlueprints[key] || 0) > 0;
+    if (isOwned) continue;
+    hasItems = true;
 
- const costItemsHTML = item.cost
- .map((needed, idx) => {
- if (needed <= 0) return null;
- const itemName = craftNames[idx];
- const owned = craftInventory[Object.keys(GAME_DATA.craftables)[idx]] || 0;
- const isMet = owned >= needed;
+    const costItemsHTML = item.cost
+      .map((needed, idx) => {
+        if (needed <= 0) return null;
+        const itemName = craftNames[idx];
+        const owned = craftInventory[Object.keys(GAME_DATA.craftables)[idx]] || 0;
+        const isMet = owned >= needed;
 
- return `
- <li class="cost-item ${isMet ? 'met' : 'missing'}">
- <span class="item-name">${itemName}</span>
- <span class="item-amount">${needed} / ${owned}</span>
- </li>
- `;
- })
- .filter(Boolean)
- .join('');
+        return `
+          <li class="cost-item ${isMet ? 'met' : 'missing'}">
+            <span class="item-name">${itemName}</span>
+            <span class="item-amount">${needed} / ${owned}</span>
+          </li>
+        `;
+      })
+      .filter(Boolean)
+      .join('');
 
- const row = document.createElement('div');
- row.className = 'crafting-item';
- row.style.flexDirection = 'column';
- row.style.alignItems = 'stretch';
- row.innerHTML = `
- <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
- <img src="${item.image}" style="width:50px; height:35px; object-fit:cover; border-radius:4px; border:1px solid #46464f;">
- <div class="craft-info" style="flex:1;">
- <strong>${item.name} Blueprint</strong>
- <small>Category: ${item.category}</small>
- </div>
- <div class="craft-controls">
- <button class="craft-btn" onclick="buyBlueprint('${key}')">Buy</button>
- </div>
- </div>
- <div class="card-cost-section" style="margin-top: 6px;">
- <div class="cost-header">
- <span>Blueprint Cost</span>
- <span>Needed/Owned</span>
- </div>
- <ul class="cost-list">
- ${costItemsHTML}
- </ul>
- </div>
- `;
- container.appendChild(row);
- }
+    const row = document.createElement('div');
+    row.className = 'crafting-item';
+    row.style.flexDirection = 'column';
+    row.style.alignItems = 'stretch';
+    row.innerHTML = `
+      <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
+        <img src="${item.image}" style="width:50px; height:35px; object-fit:cover; border-radius:4px; border:1px solid #46464f;">
+        <div class="craft-info" style="flex:1;">
+          <strong>${item.name} Blueprint</strong>
+          <small>Category: ${item.category || 'decor'}</small>
+        </div>
+        <div class="craft-controls">
+          <button class="craft-btn" onclick="buyBlueprint('${key}')">Buy</button>
+        </div>
+      </div>
+      <div class="card-cost-section" style="margin-top: 6px;">
+        <div class="cost-header">
+          <span>Blueprint Cost</span>
+          <span>Needed/Owned</span>
+        </div>
+        <ul class="cost-list">
+          ${costItemsHTML}
+        </ul>
+      </div>
+    `;
+    container.appendChild(row);
+  }
 
- if (!hasItems) {
- container.innerHTML = '<div style="text-align:center; color:#adadb8; font-size:0.75rem; padding:20px;">All blueprints unlocked!</div>';
- }
+  if (!hasItems) {
+    container.innerHTML = '<div style="text-align:center; color:#adadb8; font-size:0.75rem; padding:20px;">All blueprints unlocked!</div>';
+  }
 }
 
 function buyBlueprint(key) {
@@ -1338,6 +1338,7 @@ function renderNotionsDecor(filterCategory = 'decor') {
     const cardEl = document.createElement('div');
     cardEl.className = 'notion-card';
     cardEl.style.position = 'relative';
+    cardEl.style.overflow = 'visible';
     cardEl.style.borderColor = isEquipped ? '#00f0ff' : '#46464f';
     cardEl.innerHTML = `
       <img src="${item.image}" style="width:100%; height:60px; object-fit:cover; border-radius:2px; margin-bottom:2px;">
@@ -1350,7 +1351,7 @@ function renderNotionsDecor(filterCategory = 'decor') {
     if (isEquipped) {
       const unequipBadge = document.createElement('div');
       unequipBadge.innerHTML = '✕ Unequip';
-      unequipBadge.style.cssText = 'position:absolute; top:4px; right:4px; background:rgba(255,68,68,0.9); color:white; font-size:0.6rem; padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:bold;';
+      unequipBadge.style.cssText = 'position:absolute; top:-6px; right:-6px; background:rgba(255,68,68,0.95); color:white; font-size:0.65rem; padding:4px 8px; border-radius:6px; cursor:pointer; font-weight:bold; z-index:10; box-shadow:0 2px 6px rgba(0,0,0,0.5);';
       unequipBadge.onclick = (e) => {
         e.stopPropagation();
         equipDecor(null, filterCategory);
