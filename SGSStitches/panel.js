@@ -119,11 +119,11 @@ window.switchNotionsCategory = function(category, btnEl) {
  const buttonsSec = document.getElementById('notions-category-buttons');
 
  if (cardsSec) cardsSec.style.display = (category === 'cards') ? 'block' : 'none';
- if (decorSec) {
-     decorSec.style.display = (category === 'decor') ? 'block' : 'none';
-     if (category === 'decor') renderNotionsDecor();
- }
+ if (decorSec) decorSec.style.display = (category === 'decor') ? 'block' : 'none';
  if (buttonsSec) buttonsSec.style.display = (category === 'buttons') ? 'block' : 'none';
+
+ if (category === 'decor') renderNotionsDecor('decor');
+ if (category === 'buttons') renderNotionsDecor('buttons');
 };
 
 window.switchShopCategory = function(category, btnEl) {
@@ -259,9 +259,19 @@ async function loadUserData() {
  ownedBlueprints = d.ownedBlueprints || {};
  craftedDecor = d.craftedDecor || {};
  equippedDecor = d.equippedDecor || null;
+ 
+ equippedWallpaper = d.equippedWallpaper || null;
+ equippedButton = d.equippedButton || null;
+
+ console.log("Loaded craftedDecor:", craftedDecor);
+
+ if (Object.keys(activeCrafts).length > 0) {
+ startStitchAnimation();
+ }
  }
  updateUI();
  applyEquippedWallpaper();
+ renderNotionsDecor();
  } catch (err) {
  console.error("Firebase load error:", err);
  }
@@ -296,7 +306,8 @@ async function saveUserData() {
  cardTimers: cardTimers,
  ownedBlueprints: ownedBlueprints,
  craftedDecor: craftedDecor,
- equippedDecor: equippedDecor,
+ equippedWallpaper: equippedWallpaper,
+ equippedButton: equippedButton,
  };
 
  await docRef.set(dataToSave, { merge: true });
@@ -406,6 +417,51 @@ function spawnCardFloatingSPM(slotEl, spmValue) {
 
  document.body.appendChild(el);
  setTimeout(() => el.remove(), 2500);
+}
+
+let stitchPatternToggle = false;
+
+let stitchInterval1 = null;
+let stitchInterval2 = null;
+
+function startStitchAnimation() {
+  if (stitchInterval1) return;
+  stitchInterval1 = setInterval(() => {
+    spawnCraftingStitches('|');
+  }, 200);
+  stitchInterval2 = setInterval(() => {
+    spawnCraftingStitches(['/', '\\'][Math.floor(Math.random() * 2)]);
+  }, 300);
+}
+
+function stopStitchAnimation() {
+  clearInterval(stitchInterval1);
+  clearInterval(stitchInterval2);
+  stitchInterval1 = null;
+  stitchInterval2 = null;
+}
+
+function spawnCraftingStitches(char) {
+  const craftBtn = document.getElementById('nav-crafting');
+  if (!craftBtn) return;
+  const rect = craftBtn.getBoundingClientRect();
+  const offsetX = (Math.random() - 0.5) * (rect.width * 0.8);
+
+  const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+  const el = document.createElement('div');
+  el.className = 'crafting-stitch-floater';
+  el.textContent = char;
+
+  el.style.left = `${rect.left + rect.width / 2 + offsetX}px`;
+  el.style.top = `${rect.top + 15}px`;
+  el.style.color = randomColor;
+  el.style.fontWeight = 'bold';
+  el.style.textShadow = '1px 1px 1px rgba(0, 0, 0, 0.8)';
+
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 400);
 }
 
 bindClick('join-btn', async () => {
@@ -584,9 +640,12 @@ function renderShopBlueprints() {
  container.innerHTML = '';
 
  const craftNames = ["Coasters", "Std Bowls", "Rainbowls", "Large Bowls", "Fabrics"];
+ let hasItems = false;
 
  for (const [key, item] of Object.entries(GAME_DATA.decor)) {
  const isOwned = (ownedBlueprints[key] || 0) > 0;
+ if (isOwned) continue;
+ hasItems = true;
 
  const costItemsHTML = item.cost
  .map((needed, idx) => {
@@ -617,9 +676,7 @@ function renderShopBlueprints() {
  <small>Category: ${item.category}</small>
  </div>
  <div class="craft-controls">
- <button class="craft-btn" ${isOwned ? 'disabled style="opacity:0.5;"' : `onclick="buyBlueprint('${key}')"`}>
- ${isOwned ? 'Owned' : 'Buy'}
- </button>
+ <button class="craft-btn" onclick="buyBlueprint('${key}')">Buy</button>
  </div>
  </div>
  <div class="card-cost-section" style="margin-top: 6px;">
@@ -633,6 +690,10 @@ function renderShopBlueprints() {
  </div>
  `;
  container.appendChild(row);
+ }
+
+ if (!hasItems) {
+ container.innerHTML = '<div style="text-align:center; color:#adadb8; font-size:0.75rem; padding:20px;">All blueprints unlocked!</div>';
  }
 }
 
@@ -867,6 +928,8 @@ function renderCrafting() {
  ? `<span style="color:#00ff88;">Costs ${discountedCost} Stitches</span> <s style="color:#adadb8; font-size:0.65rem;">(${item.cost})</s>`
  : `Costs ${item.cost} Stitches`;
 
+ const isCrafting = !!activeCrafts[key];
+
  const row = document.createElement('div');
  row.className = 'crafting-item';
  row.style.flexDirection = 'column';
@@ -878,25 +941,30 @@ function renderCrafting() {
  <span>${costText} (${discountedTime}s)</span>
  </div>
  <div class="craft-controls">
- <input type="number" id="qty-${key}" value="1" min="1" class="craft-qty-input">
- <button id="btn-craft-${key}" class="craft-btn" onclick="startCrafting('${key}')">Craft</button>
+ <input type="number" id="qty-${key}" value="1" min="1" class="craft-qty-input" ${isCrafting ? 'disabled' : ''}>
+ <button id="btn-craft-${key}" class="craft-btn" ${isCrafting ? 'disabled style="opacity:0.5;"' : ''} onclick="startCrafting('${key}')">Craft</button>
  </div>
  </div>
- <div id="progress-box-${key}" class="craft-progress-container">
+ <div id="progress-box-${key}" class="craft-progress-container" style="display: ${isCrafting ? 'block' : 'none'};">
  <div id="progress-bar-${key}" class="craft-progress-bar"></div>
  </div>
- <div id="timer-text-${key}" class="craft-timer-text">Crafting...</div>
+ <div id="timer-text-${key}" class="craft-timer-text" style="display: ${isCrafting ? 'block' : 'none'};">Crafting...</div>
  `;
  container.appendChild(row);
  }
 
-if (currentCraftCategory === 'decor') {
+ if (currentCraftCategory === 'decor' || currentCraftCategory === 'buttons') {
  for (const [key, item] of Object.entries(GAME_DATA.decor)) {
+ if ((item.category || 'decor') !== currentCraftCategory) continue;
+
  const hasBlueprint = (ownedBlueprints[key] || 0) > 0;
  if (!hasBlueprint) continue;
- hasItems = true;
 
  const isAlreadyCrafted = (craftedDecor[key] || 0) > 0;
+ if (isAlreadyCrafted) continue;
+ hasItems = true;
+
+ const isCrafting = !!activeCrafts[`decor_${key}`];
  const stitchCost = 500;
 
  const row = document.createElement('div');
@@ -911,15 +979,15 @@ if (currentCraftCategory === 'decor') {
  <span>Costs ${stitchCost} Stitches (${item.craftTime}s)</span>
  </div>
  <div class="craft-controls">
- <button id="btn-craft-decor_${key}" class="craft-btn" ${isAlreadyCrafted ? 'disabled style="opacity:0.5;"' : `onclick="startCraftingDecor('${key}')"`}>
- ${isAlreadyCrafted ? 'Crafted' : 'Craft'}
+ <button id="btn-craft-decor_${key}" class="craft-btn" ${isCrafting ? 'disabled style="opacity:0.5;"' : `onclick="startCraftingDecor('${key}')"`}>
+ ${isCrafting ? 'Crafting...' : 'Craft'}
  </button>
  </div>
  </div>
- <div id="progress-box-decor_${key}" class="craft-progress-container">
+ <div id="progress-box-decor_${key}" class="craft-progress-container" style="display: ${isCrafting ? 'block' : 'none'};">
  <div id="progress-bar-decor_${key}" class="craft-progress-bar"></div>
  </div>
- <div id="timer-text-decor_${key}" class="craft-timer-text">Crafting...</div>
+ <div id="timer-text-decor_${key}" class="craft-timer-text" style="display: ${isCrafting ? 'block' : 'none'};">Crafting...</div>
  `;
  container.appendChild(row);
  }
@@ -940,7 +1008,13 @@ function startCrafting(key) {
 
  const discountedCost = Math.max(1, Math.floor(item.cost * (1 - perks.craftCostDiscount)));
  const totalCost = discountedCost * qty;
-
+ activeCrafts[key] = {
+  totalBaseSeconds: item.craftTime * qty,
+  completedSeconds: 0,
+  lastUpdate: Date.now(),
+  qty: qty
+};
+ startStitchAnimation();
  if (score >= totalCost) {
  score -= totalCost;
  activeCrafts[key] = {
@@ -963,7 +1037,15 @@ function startCraftingDecor(key) {
  if (!item || activeCrafts[`decor_${key}`]) return;
 
  const stitchCost = 500;
-
+ activeCrafts[`decor_${key}`] = {
+  totalBaseSeconds: item.craftTime,
+  completedSeconds: 0,
+  lastUpdate: Date.now(),
+  qty: 1,
+  isDecor: true,
+  decorKey: key
+};
+ startStitchAnimation();
  if (score >= stitchCost) {
  score -= stitchCost;
  activeCrafts[`decor_${key}`] = {
@@ -991,13 +1073,6 @@ function updateCraftingProgress() {
  for (const [key, craft] of Object.entries(activeCrafts)) {
  const isDecor = craft.isDecor;
  const suffixKey = isDecor ? `decor_${craft.decorKey}` : key;
- 
- const pBox = document.getElementById(`progress-box-${suffixKey}`);
- const pBar = document.getElementById(`progress-bar-${suffixKey}`);
- const pTimer = document.getElementById(`timer-text-${suffixKey}`);
- const craftBtn = document.getElementById(`btn-craft-${suffixKey}`);
-
- if (!pBox || !pBar || !pTimer) continue;
 
  if (craft.totalBaseSeconds === undefined) {
  craft.totalBaseSeconds = (craft.totalDuration || 10000) / 1000;
@@ -1009,10 +1084,18 @@ function updateCraftingProgress() {
  craft.lastUpdate = now;
  craft.completedSeconds += delta * speed;
 
+ const pBox = document.getElementById(`progress-box-${suffixKey}`);
+ const pBar = document.getElementById(`progress-bar-${suffixKey}`);
+ const pTimer = document.getElementById(`timer-text-${suffixKey}`);
+ const craftBtn = document.getElementById(`btn-craft-${suffixKey}`);
+
  if (craft.completedSeconds >= craft.totalBaseSeconds) {
  if (isDecor) {
  craftedDecor[craft.decorKey] = 1;
  delete activeCrafts[key];
+ if (Object.keys(activeCrafts).length === 0) {
+ stopStitchAnimation();
+ }
  showNotify(`Completed ${GAME_DATA.decor[craft.decorKey].name}!`);
  updateUI();
  renderCrafting();
@@ -1025,14 +1108,18 @@ function updateCraftingProgress() {
  lifetimeCrafted[key] = (lifetimeCrafted[key] || 0) + craft.qty;
  delete activeCrafts[key];
 
- pBox.style.display = 'none';
- pTimer.style.display = 'none';
+ if (Object.keys(activeCrafts).length === 0) {
+ stopStitchAnimation();
+ }
+
+ if (pBox) pBox.style.display = 'none';
+ if (pTimer) pTimer.style.display = 'none';
  if (craftBtn) craftBtn.disabled = false;
 
  showNotify(`Completed ${craft.qty}x ${GAME_DATA.craftables[key].name}!`);
  updateUI();
  saveUserData();
- } else {
+ } else if (pBox && pBar && pTimer) {
  pBox.style.display = 'block';
  pTimer.style.display = 'block';
  if (craftBtn) craftBtn.disabled = true;
@@ -1133,7 +1220,7 @@ function renderNotionsTab() {
  } else {
  statusBadge = `<span style="color:#00f0ff; font-size:0.5rem; margin-top:2px;">▶ Click to Start!</span>`;
  }
- }
+}
 
  slotEl.className = `slot ${tier}`;
  slotEl.innerHTML = `
@@ -1192,6 +1279,7 @@ function renderNotionsTab() {
 
  const cardEl = document.createElement('div');
  cardEl.className = `notion-card ${tier}`;
+ cardEl.style.position = 'relative';
 
  if (availableToEquip === 0) {
  cardEl.style.opacity = '0.35';
@@ -1205,10 +1293,12 @@ function renderNotionsTab() {
  cardEl.innerHTML = `
  <div class="card-name">${tool.name}</div>
  <div class="card-tier-label" style="color: ${tier === 'gold' ? '#ffd700' : tier === 'silver' ? '#c0c0c0' : '#cd7f32'}">
- ${availableToEquip === 0 ? 'EQUIPPED' : tier}
+ ${availableToEquip === 0 ? 'OWNED' : tier}
  </div>
  ${cooldownBadge}
- <small style="font-size: 0.52rem; margin-top: 2px;">Owned: ${totalOwned} (${availableToEquip} free)</small>
+ <div class="card-tier-label" style="color: #adadb8; margin-top: 2px;">
+ ${availableToEquip === 0 ? 'EQUIPPED' : `Owned: ${totalOwned}`}
+ </div>
  `;
 
  grid.appendChild(cardEl);
@@ -1217,69 +1307,116 @@ function renderNotionsTab() {
  }
 
  if (!hasCards) {
- ownedList.innerHTML = '<p class="placeholder-text">No cards owned yet. Trade for some in the Shop!</p>';
+  ownedList.innerHTML = '<p class="placeholder-text">No cards owned yet. Trade for some in the Shop!</p>';
  } else {
- ownedList.appendChild(grid);
- }
+  ownedList.appendChild(grid);
+  }
 }
 
-function renderNotionsDecor() {
- const container = document.getElementById('notions-category-decor');
- if (!container) return;
- container.innerHTML = '';
+let equippedWallpaper = null;
+let equippedButton = null;
 
- const grid = document.createElement('div');
- grid.className = 'notions-grid';
+function renderNotionsDecor(filterCategory = 'decor') {
+  const containerId = filterCategory === 'buttons' ? 'notions-category-buttons' : 'notions-category-decor';
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
 
- let hasDecor = false;
+  const grid = document.createElement('div');
+  grid.className = 'notions-grid';
 
- for (const [key, item] of Object.entries(GAME_DATA.decor)) {
- const owned = (craftedDecor[key] || 0) > 0;
- if (!owned) continue;
- hasDecor = true;
+  let hasItems = false;
 
- const isEquipped = equippedDecor === key;
+  for (const [key, item] of Object.entries(GAME_DATA.decor)) {
+    if ((item.category || 'decor') !== filterCategory) continue;
+    const owned = (craftedDecor[key] || 0) > 0;
+    if (!owned) continue;
+    hasItems = true;
 
- const cardEl = document.createElement('div');
- cardEl.className = 'notion-card';
- cardEl.style.borderColor = isEquipped ? '#00f0ff' : '#46464f';
- cardEl.innerHTML = `
- <img src="${item.image}" style="width:100%; height:60px; object-fit:cover; border-radius:2px; margin-bottom:2px;">
- <div class="card-name">${item.name}</div>
- <div class="card-tier-label" style="color: ${isEquipped ? '#00f0ff' : '#adadb8'}">
- ${isEquipped ? 'EQUIPPED' : 'OWNED'}
- </div>
- `;
- cardEl.onclick = () => equipDecor(key);
- grid.appendChild(cardEl);
- }
+    const isEquipped = filterCategory === 'buttons' ? equippedButton === key : equippedWallpaper === key;
 
- if (!hasDecor) {
- container.innerHTML = '<div style="text-align:center; color:#adadb8; font-size:0.75rem; padding:20px;">No decor crafted yet! Buy blueprints in the Shop and craft them.</div>';
- } else {
- container.appendChild(grid);
- }
+    const cardEl = document.createElement('div');
+    cardEl.className = 'notion-card';
+    cardEl.style.position = 'relative';
+    cardEl.style.borderColor = isEquipped ? '#00f0ff' : '#46464f';
+    cardEl.innerHTML = `
+      <img src="${item.image}" style="width:100%; height:60px; object-fit:cover; border-radius:2px; margin-bottom:2px;">
+      <div class="card-name">${item.name}</div>
+      <div class="card-tier-label" style="color: ${isEquipped ? '#00f0ff' : '#adadb8'}">
+        ${isEquipped ? 'EQUIPPED' : 'OWNED'}
+      </div>
+    `;
+
+    if (isEquipped) {
+      const unequipBadge = document.createElement('div');
+      unequipBadge.innerHTML = '✕ Unequip';
+      unequipBadge.style.cssText = 'position:absolute; top:4px; right:4px; background:rgba(255,68,68,0.9); color:white; font-size:0.6rem; padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:bold;';
+      unequipBadge.onclick = (e) => {
+        e.stopPropagation();
+        equipDecor(null, filterCategory);
+      };
+      cardEl.appendChild(unequipBadge);
+      cardEl.onclick = () => {};
+    } else {
+      cardEl.onclick = () => equipDecor(key, filterCategory);
+    }
+
+    grid.appendChild(cardEl);
+  }
+
+  if (!hasItems) {
+    container.innerHTML = `<div style="text-align:center; color:#adadb8; font-size:0.75rem; padding:20px;">No ${filterCategory} crafted yet! Buy blueprints in the Shop and craft them.</div>`;
+  } else {
+    container.appendChild(grid);
+  }
 }
 
-function equipDecor(key) {
- equippedDecor = key;
- applyEquippedWallpaper();
- showNotify(`Equipped ${GAME_DATA.decor[key].name}!`);
- renderNotionsDecor();
- updateUI();
- saveUserData();
+function equipDecor(key, category = 'decor') {
+  if (category === 'buttons') {
+    if (key === null) {
+      equippedButton = null;
+      showNotify("Unequipped button!");
+    } else {
+      equippedButton = key;
+      showNotify(`Equipped ${GAME_DATA.decor[key].name}!`);
+    }
+  } else {
+    if (key === null) {
+      equippedWallpaper = null;
+      showNotify("Unequipped wallpaper!");
+    } else {
+      equippedWallpaper = key;
+      showNotify(`Equipped ${GAME_DATA.decor[key].name}!`);
+    }
+  }
+
+  applyEquippedWallpaper();
+  renderNotionsDecor('decor');
+  renderNotionsDecor('buttons');
+  updateUI();
+  saveUserData();
 }
 
 function applyEquippedWallpaper() {
- const container = document.querySelector('.container');
- if (!container) return;
+  const container = document.querySelector('.container');
+  const clickerBtn = document.getElementById('click-btn');
+  if (!container) return;
 
- if (equippedDecor && GAME_DATA.decor[equippedDecor]) {
- const item = GAME_DATA.decor[equippedDecor];
- container.style.backgroundImage = `url('${item.image}')`;
- container.style.backgroundSize = 'cover';
- container.style.backgroundPosition = 'center';
- }
+  if (equippedWallpaper && GAME_DATA.decor[equippedWallpaper]) {
+    const wallItem = GAME_DATA.decor[equippedWallpaper];
+    container.style.backgroundImage = `url('${wallItem.image}')`;
+    container.style.backgroundSize = 'cover';
+    container.style.backgroundPosition = 'center';
+  } else {
+    container.style.backgroundImage = '';
+  }
+
+  if (equippedButton && GAME_DATA.decor[equippedButton]) {
+    const btnItem = GAME_DATA.decor[equippedButton];
+    if (clickerBtn) clickerBtn.style.backgroundImage = `url('${btnItem.image}')`;
+  } else {
+    if (clickerBtn) clickerBtn.style.backgroundImage = "url('images/clickerbutton.png')";
+  }
 }
 
 function equipCard(cardId, tier) {
