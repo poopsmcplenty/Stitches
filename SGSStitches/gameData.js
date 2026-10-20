@@ -42,7 +42,7 @@ const GAME_DATA = {
 // --- NOTIONS ---
   // Craft index: [0: Coaster, 1: Std Bowl, 2: Rainbowl, 3: Large Bowl, 4: Fabric]
   // Bonus: [0: click multiplier, 1: cheaper crafting %, 2: shorter craft time %, 3: cheaper shop %, 4: timed SPM boost]
-  // Timed: [ time, cooldown time]
+  // Timed: [time, cooldown time]
   notions: {
     thimble: {
       name: "Thimble", image: "images/thimble.png", imageTimed: [0,0], Description: "Power up your clicker finger!",

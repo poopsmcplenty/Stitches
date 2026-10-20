@@ -70,7 +70,7 @@ body, html {
   position: relative;
   overflow: hidden;
 
-  /* The Flowing Liquid Gradient */
+  /* Flowing Liquid Gradient */
   background: linear-gradient(-45deg, #2b1055, #751768, #3b134a, #1a0b2e, #4c1d6b);
   background-size: 300% 300%;
   animation: liquidFlow 22s ease infinite;
