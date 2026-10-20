@@ -12,7 +12,7 @@ const GAME_DATA = {
     fabric:     { name: "Fabric",      cost: 20000, craftTime: 1800, category: "fabric" }
   },
 
-  // --- SHOP (MACHINES & POWER-UPS) ---
+  // --- SHOP (MACHINES & POWER-UP single use items) ---
   // [SPM Boost, Standard Bowl Cost, Cap Rule]
   shopItems: {
     stdMachine:   { name: "Standard Machine",    spm: 1,  cost: 1,  cap: null },

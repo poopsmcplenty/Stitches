@@ -1,4 +1,4 @@
-// --- FIREBASE INITIALIZATION ---
+// --- FIREBASE DB INITIALIZATION ---
 let db;
 
 function initFirebase() {
