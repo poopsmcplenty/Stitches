@@ -40,28 +40,28 @@ const GAME_DATA = {
   // Timed: [ time, cooldown time]
   notions: {
     thimble: {
-      name: "Thimble", Timed: [0,0], Description: "Power up your clicker finger!",
+      name: "Thimble", image: "images/thimble.png", imageTimed: [0,0], Description: "Power up your clicker finger!",
       bronze: { spm: 1, bonus: [0, 2.0],  cost: [10, 5, 2, 0, 0] },     // +200% Click (2X)
       silver: { spm: 2, bonus: [0, 5.0],  cost: [20, 10, 5, 0, 0] },     // +500% Click (5x)
       gold:   { spm: 4, bonus: [0, 10.0], cost: [40, 15, 10, 0, 0] }     // +1000% Click (10x)
     },
 
     shears: {
-      name: "Fabric Shears", Timed: [0,0], Description: "Snip your shop costs!",
+      name: "Fabric Shears", image: "images/fabric_shears.png", Timed: [0,0], Description: "Snip your shop costs!",
       bronze: { spm: 2,  bonus: [3, 0.05], cost: [50, 10, 4, 2, 0] },   // 5% cheaper shop
       silver: { spm: 5,  bonus: [3, 0.10], cost: [100, 20, 8, 5, 0] },  // 10% cheaper shop
       gold:   { spm: 10, bonus: [3, 0.15], cost: [200, 30, 16, 10, 0] }  // 15% cheaper shop
     },
 
     Needles: {
-      name: "Ultra Needle", Timed: [600, 5400], Description: "Ultra Needle will boost your crafting, but tire quickly!",
+      name: "Ultra Needle", image: "images/ultra_needle.png", Timed: [600, 5400], Description: "Ultra Needle will boost your crafting, but tire quickly!",
       bronze: { spm: 10,  bonus: [2, 0.25], cost: [500, 50, 40, 10, 1] },   // 25% faster crafting
       silver: { spm: 25,  bonus: [2, 0.50], cost: [750, 75, 60, 20, 2] },   // 50% faster crafting
       gold:   { spm: 50,  bonus: [2, 0.75], cost: [1000, 150, 80, 40, 3] }  // 75% faster crafting
     },
 
     Bobbin: {
-      name: "Super Bobbin", Timed: [900, 6000], Description: "The Super Bobbin boosts your spin speed, but overheats!",
+      name: "Super Bobbin", image: "images/super_bobbin.png", Timed: [900, 6000], Description: "The Super Bobbin boosts your spin speed, but overheats!",
       bronze: { spm: 10,  bonus: [1, 0.25], cost: [500, 50, 40, 10, 1] },   // 15% cheaper crafting
       silver: { spm: 25, bonus: [1, 0.50], cost: [750, 75, 60, 20, 2] },    // 30% cheaper crafting
       gold:   { spm: 50, bonus: [1, 0.75], cost: [1000, 150, 80, 40, 3] }   // 75% cheaper crafting

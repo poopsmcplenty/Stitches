@@ -606,7 +606,7 @@ function renderShopNotions() {
  ['bronze', 'silver', 'gold'].forEach(tier => {
  const card = tool[tier];
  if (!card) return;
-
+ const bgImage = tool.image ? `background-image: url('${tool.image}');` : '';
  const cardId = `${key}_${tier}`;
  const maxLimit = 1;
  const currentOwned = craftInventory[cardId] || 0;
@@ -614,6 +614,7 @@ function renderShopNotions() {
 
  const el = document.createElement('div');
  el.className = `notion-card ${tier}`;
+ el.style.cssText = `position: relative; ${bgImage}`;
 
  if (isMaxed) {
  el.style.opacity = '0.35';
@@ -624,8 +625,8 @@ function renderShopNotions() {
  }
 
  el.innerHTML = `
- <div class="card-name">${tool.name}</div>
- <div class="card-tier-label" style="color: ${tier === 'gold' ? '#ffd700' : tier === 'silver' ? '#c0c0c0' : '#cd7f32'}">
+ <div class="card-name" style="margin-top: auto; margin-bottom: 2px; font-size: 0.55rem; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">${tool.name}</div>
+ <div class="card-tier-label" style="color: ${tier === 'gold' ? '#ffd700' : tier === 'silver' ? '#c0c0c0' : '#cd7f32'}; margin-bottom: 4px; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">
  ${isMaxed ? 'MAX OWNED' : tier}
  </div>
  `;
@@ -1193,6 +1194,7 @@ function renderNotionsTab() {
  if (cardId) {
  const [key, tier] = cardId.split('_');
  const tool = GAME_DATA.notions[key];
+ const bgImage = tool?.image ? `background-image: url('${tool.image}');` : '';
  const timed = tool?.Timed || tool?.timed || [0, 0];
  const isTimed = timed[0] > 0;
  const timer = cardTimers[cardId];
@@ -1221,12 +1223,11 @@ function renderNotionsTab() {
  } else {
  statusBadge = `<span style="color:#00f0ff; font-size:0.5rem; margin-top:2px;">▶ Click to Start!</span>`;
  }
-}
+ }
 
  slotEl.className = `slot ${tier}`;
+ slotEl.style.cssText = `position: relative; ${bgImage}`;
  slotEl.innerHTML = `
- <strong style="font-size:0.65rem;">${tool?.name || ''}</strong>
- <span style="font-size:0.55rem; text-transform:uppercase;">(${tier})</span>
  ${statusBadge}
  `;
 
@@ -1235,7 +1236,11 @@ function renderNotionsTab() {
  const defaultTiers = ['Bronze', 'Bronze', 'Silver', 'Gold'];
  const slotTier = defaultTiers[index].toLowerCase();
  slotEl.className = `slot ${slotTier}`;
- slotEl.innerHTML = `<span>${defaultTiers[index]}<br><small>Empty</small></span>`;
+ slotEl.style.cssText = '';
+ slotEl.innerHTML = `
+ <strong style="font-size:0.6rem;">${defaultTiers[index]}</strong>
+ <span style="font-size:0.5rem; opacity:0.7;">Empty</span>
+ `;
  slotEl.onclick = null;
  slotEl.onmouseenter = null;
  slotEl.onmouseleave = null;
@@ -1252,12 +1257,13 @@ function renderNotionsTab() {
  ['bronze', 'silver', 'gold'].forEach(tier => {
  const cardId = `${key}_${tier}`;
  const totalOwned = craftInventory[cardId] || 0;
- const equippedCount = equippedSlots.filter(id => id === cardId).length;
- const availableToEquip = totalOwned - equippedCount;
+ const equippedIndex = equippedSlots.findIndex(id => id === cardId);
+ const isEquipped = equippedIndex !== -1;
 
  if (totalOwned > 0) {
  hasCards = true;
 
+ const bgImage = tool.image ? `background-image: url('${tool.image}');` : '';
  const timed = tool?.Timed || tool?.timed || [0, 0];
  const isTimed = timed[0] > 0;
  const timer = cardTimers[cardId];
@@ -1265,7 +1271,7 @@ function renderNotionsTab() {
  const isCooldown = isTimed && timer && now < timer.readyAt;
 
  let cooldownBadge = "";
- if (isCooldown && availableToEquip > 0) {
+ if (isCooldown && !isEquipped) {
  const totalCd = timed[1] * 1000;
  const rem = Math.max(0, timer.readyAt - now);
  const pct = Math.max(0, Math.min(100, (rem / totalCd) * 100));
@@ -1280,27 +1286,30 @@ function renderNotionsTab() {
 
  const cardEl = document.createElement('div');
  cardEl.className = `notion-card ${tier}`;
- cardEl.style.position = 'relative';
-
- if (availableToEquip === 0) {
- cardEl.style.opacity = '0.35';
- cardEl.style.pointerEvents = 'none';
- cardEl.style.cursor = 'not-allowed';
- } else {
- cardEl.style.opacity = '1';
- cardEl.onclick = () => showCardTooltip(key, tier, 'inventory');
- }
+ cardEl.style.cssText = `position: relative; overflow: visible; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 4px; ${bgImage}`;
+ cardEl.style.borderColor = isEquipped ? '#00f0ff' : '#46464f';
 
  cardEl.innerHTML = `
- <div class="card-name">${tool.name}</div>
- <div class="card-tier-label" style="color: ${tier === 'gold' ? '#ffd700' : tier === 'silver' ? '#c0c0c0' : '#cd7f32'}">
- ${availableToEquip === 0 ? 'OWNED' : tier}
+ <div class="card-name" style="margin-top: auto; font-size: 0.55rem !important; font-weight: bold; line-height: 1.1; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">${tool.name}</div>
+ <div class="card-tier-label" style="color: ${isEquipped ? '#00f0ff' : '#adadb8'}; font-size: 0.48rem !important; margin-bottom: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">
+ ${isEquipped ? 'EQUIPPED' : tier.toUpperCase()}
  </div>
  ${cooldownBadge}
- <div class="card-tier-label" style="color: #adadb8; margin-top: 2px;">
- ${availableToEquip === 0 ? 'EQUIPPED' : `Owned: ${totalOwned}`}
- </div>
  `;
+
+ if (isEquipped) {
+ const unequipBadge = document.createElement('div');
+ unequipBadge.innerHTML = '✕ Unequip';
+ unequipBadge.style.cssText = 'position:absolute; top:-6px; right:-6px; background:rgba(255,68,68,0.95); color:white; font-size:0.65rem; padding:4px 8px; border-radius:6px; cursor:pointer; font-weight:bold; z-index:10; box-shadow:0 2px 6px rgba(0,0,0,0.5);';
+ unequipBadge.onclick = (e) => {
+ e.stopPropagation();
+ unequipCard(equippedIndex);
+ };
+ cardEl.appendChild(unequipBadge);
+ cardEl.onclick = () => showCardTooltip(key, tier, 'equipped', equippedIndex);
+ } else {
+ cardEl.onclick = () => showCardTooltip(key, tier, 'inventory');
+ }
 
  grid.appendChild(cardEl);
  }
@@ -1308,10 +1317,10 @@ function renderNotionsTab() {
  }
 
  if (!hasCards) {
-  ownedList.innerHTML = '<p class="placeholder-text">No cards owned yet. Trade for some in the Shop!</p>';
+ ownedList.innerHTML = '<p class="placeholder-text">No cards owned yet. Trade for some in the Shop!</p>';
  } else {
-  ownedList.appendChild(grid);
-  }
+ ownedList.appendChild(grid);
+ }
 }
 
 let equippedWallpaper = null;
@@ -1329,7 +1338,7 @@ function renderNotionsDecor(filterCategory = 'decor') {
  const controlBox = document.createElement('div');
  controlBox.style.cssText = 'background:#1f1f23; border:1px solid #46464f; border-radius:6px; padding:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:0.7rem;';
  controlBox.innerHTML = `
-   <span>Clicker Glow Color:</span>
+   <span>Click Burst Color:</span>
    <input type="color" id="global-glow-picker" value="${buttonGlowColor || '#00f0ff'}" style="width:50px; height:22px; border:1px solid #46464f; background:transparent; cursor:pointer; border-radius:3px;">
  `;
  
@@ -1363,8 +1372,8 @@ function renderNotionsDecor(filterCategory = 'decor') {
  cardEl.style.borderColor = isEquipped ? '#00f0ff' : '#46464f';
  cardEl.innerHTML = `
  <img src="${item.image}" style="width:100%; height:60px; object-fit:cover; border-radius:2px; margin-bottom:2px;">
- <div class="card-name">${item.name}</div>
- <div class="card-tier-label" style="color: ${isEquipped ? '#00f0ff' : '#adadb8'}">
+ <div class="card-name" style="font-size: 0.6rem; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">${item.name}</div>
+ <div class="card-tier-label" style="color: ${isEquipped ? '#00f0ff' : '#adadb8'}; font-size: 0.5rem; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">
  ${isEquipped ? 'EQUIPPED' : 'OWNED'}
  </div>
  `;

@@ -602,15 +602,33 @@ body, html {
   text-align: center;
   cursor: pointer;
   transition: transform 0.15s;
+  background-size: 300% 100% !important;
+  background-repeat: no-repeat !important;
 }
 
-.notion-card:hover { transform: translateY(-2px); }
-.notion-card.bronze { border-color: #cd7f32; }
-.notion-card.silver { border-color: #c0c0c0; }
-.notion-card.gold   { border-color: #ffd700; }
+.notion-card, .slot {
+  background-size: 300% 100% !important;
+  background-repeat: no-repeat !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important; /* Pushes text to the bottom */
+  align-items: center !important;
+  padding-bottom: 12px !important; /* Adjust this to position text vertically in the lower box */
+  box-sizing: border-box !important;
+}
 
-.card-name { font-size: 0.6rem; font-weight: bold; }
-.card-tier-label { font-size: 0.5rem; text-transform: uppercase; margin-top: 2px; }
+.notion-card.bronze, .slot.bronze { background-position: 0% 0%; }
+.notion-card.silver, .slot.silver { background-position: 50% 0%; }
+.notion-card.gold, .slot.gold { background-position: 100% 0%; }
+
+/* Ensure text elements inside cards render cleanly over the artwork */
+.notion-card .card-name, 
+.notion-card .card-tier-label, 
+.slot strong, 
+.slot span {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 4px rgba(0, 0, 0, 0.9);
+  line-height: 1.1;
+}
 
 /* Global 5:7 Inspection Card Tooltip (Highest z-index) */
 #global-card-tooltip {
