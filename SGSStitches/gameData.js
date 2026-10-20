@@ -26,10 +26,13 @@ const GAME_DATA = {
   // Craft index: [0: Coaster, 1: Std Bowl, 2: Rainbowl, 3: Large Bowl, 4: Fabric]
   // [Name, Cost, Craft Time, Category, Image]
   decor: {
-    sewingWallpaper: { name: "Sewing Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "wallpaper", image: "images/wallpaper_sewing.png" },
-    daisyWallpaper: { name: "Daisy Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "wallpaper", image: "images/wallpaper_daisy.png" },
-    sunsetWallpaper: { name: "Sunset Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "wallpaper", image: "images/wallpaper_sunset.png" }
+    sewingWallpaper: { name: "Sewing Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "decor", image: "images/wallpaper_sewing.png" },
+    daisyWallpaper: { name: "Daisy Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "decor", image: "images/wallpaper_daisy.png" },
+    sunsetWallpaper: { name: "Sunset Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "decor", image: "images/wallpaper_sunset.png" },
+    yarnballButton: { name: "Yarn Ball Button", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "buttons", image: "images/buttons_yarnball.png" }
   },
+
+ 
 
 // --- NOTIONS ---
   // Craft index: [0: Coaster, 1: Std Bowl, 2: Rainbowl, 3: Large Bowl, 4: Fabric]
@@ -59,7 +62,7 @@ const GAME_DATA = {
 
     Bobbin: {
       name: "Super Bobbin", Timed: [900, 6000], Description: "The Super Bobbin boosts your spin speed, but overheats!",
-      bronze: { spm: 10,  bonus: [1, 0.25], cost: [500, 50, 40, 10, 1] },   // 15% cheaper craftinng
+      bronze: { spm: 10,  bonus: [1, 0.25], cost: [500, 50, 40, 10, 1] },   // 15% cheaper crafting
       silver: { spm: 25, bonus: [1, 0.50], cost: [750, 75, 60, 20, 2] },    // 30% cheaper crafting
       gold:   { spm: 50, bonus: [1, 0.75], cost: [1000, 150, 80, 40, 3] }   // 75% cheaper crafting
     }

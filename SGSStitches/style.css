@@ -731,6 +731,25 @@ body, html {
  100% { opacity: 0; transform: translate(var(--drift-x, 0px), -90px) scale(1.1); }
 }
 
+.crafting-stitch-floater {
+  position: fixed;
+  pointer-events: none;
+  color: #00f0ff;
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 0.5rem;
+  z-index: 40;
+  user-select: none;
+  animation: continuousStitchFeed 0.4s linear forwards;
+}
+
+@keyframes continuousStitchFeed {
+  0% { opacity: 0; transform: translateY(0); }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
+
 /* Drawer Top-Right Close Button */
 .drawer-close-btn {
   position: absolute;
