@@ -24,12 +24,12 @@ const GAME_DATA = {
 
   // --- DECOR ---
   // Craft index: [0: Coaster, 1: Std Bowl, 2: Rainbowl, 3: Large Bowl, 4: Fabric]
-  // [Name, Cost, Craft Time, Category, Image]
+  // [Name, Cost, Craft Time, Category, Image, scale]
   decor: {
     sewingWallpaper: { name: "Sewing Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "decor", image: "images/wallpaper_sewing.png" },
     daisyWallpaper: { name: "Daisy Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "decor", image: "images/wallpaper_daisy.png" },
     sunsetWallpaper: { name: "Sunset Wallpaper", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "decor", image: "images/wallpaper_sunset.png" },
-    yarnballButton: { name: "Yarn Ball Button", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "buttons", image: "images/buttons_yarnball.png" }
+    yarnballButton: { name: "Yarn Ball Button", cost: [5, 2, 0, 0, 0], craftTime: 1200, category: "buttons", image: "images/buttons_yarnball.png", scale: 1.4}
   },
 
  

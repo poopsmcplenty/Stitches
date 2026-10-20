@@ -262,7 +262,7 @@ async function loadUserData() {
  
  equippedWallpaper = d.equippedWallpaper || null;
  equippedButton = d.equippedButton || null;
-
+ buttonGlowColor = d.buttonGlowColor || '#00f0ff';
  console.log("Loaded craftedDecor:", craftedDecor);
 
  if (Object.keys(activeCrafts).length > 0) {
@@ -308,6 +308,7 @@ async function saveUserData() {
  craftedDecor: craftedDecor,
  equippedWallpaper: equippedWallpaper,
  equippedButton: equippedButton,
+ buttonGlowColor: buttonGlowColor,
  };
 
  await docRef.set(dataToSave, { merge: true });
@@ -1315,61 +1316,81 @@ function renderNotionsTab() {
 
 let equippedWallpaper = null;
 let equippedButton = null;
+let buttonGlowColor = '#00f0ff';
 
 function renderNotionsDecor(filterCategory = 'decor') {
-  const containerId = filterCategory === 'buttons' ? 'notions-category-buttons' : 'notions-category-decor';
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = '';
+ const containerId = filterCategory === 'buttons' ? 'notions-category-buttons' : 'notions-category-decor';
+ const container = document.getElementById(containerId);
+ if (!container) return;
+ container.innerHTML = '';
 
-  const grid = document.createElement('div');
-  grid.className = 'notions-grid';
+ // If category is buttons, add a global glow color picker section at the top
+ if (filterCategory === 'buttons') {
+ const controlBox = document.createElement('div');
+ controlBox.style.cssText = 'background:#1f1f23; border:1px solid #46464f; border-radius:6px; padding:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:0.7rem;';
+ controlBox.innerHTML = `
+   <span>Clicker Glow Color:</span>
+   <input type="color" id="global-glow-picker" value="${buttonGlowColor || '#00f0ff'}" style="width:50px; height:22px; border:1px solid #46464f; background:transparent; cursor:pointer; border-radius:3px;">
+ `;
+ 
+ controlBox.querySelector('input').addEventListener('input', (e) => {
+   const val = e.target.value;
+   buttonGlowColor = val;
+   document.documentElement.style.setProperty('--btn-glow-color', val);
+   saveUserData();
+ });
+ 
+ container.appendChild(controlBox);
+ }
 
-  let hasItems = false;
+ const grid = document.createElement('div');
+ grid.className = 'notions-grid';
 
-  for (const [key, item] of Object.entries(GAME_DATA.decor)) {
-    if ((item.category || 'decor') !== filterCategory) continue;
-    const owned = (craftedDecor[key] || 0) > 0;
-    if (!owned) continue;
-    hasItems = true;
+ let hasItems = false;
 
-    const isEquipped = filterCategory === 'buttons' ? equippedButton === key : equippedWallpaper === key;
+ for (const [key, item] of Object.entries(GAME_DATA.decor)) {
+ if ((item.category || 'decor') !== filterCategory) continue;
+ const owned = (craftedDecor[key] || 0) > 0;
+ if (!owned) continue;
+ hasItems = true;
 
-    const cardEl = document.createElement('div');
-    cardEl.className = 'notion-card';
-    cardEl.style.position = 'relative';
-    cardEl.style.overflow = 'visible';
-    cardEl.style.borderColor = isEquipped ? '#00f0ff' : '#46464f';
-    cardEl.innerHTML = `
-      <img src="${item.image}" style="width:100%; height:60px; object-fit:cover; border-radius:2px; margin-bottom:2px;">
-      <div class="card-name">${item.name}</div>
-      <div class="card-tier-label" style="color: ${isEquipped ? '#00f0ff' : '#adadb8'}">
-        ${isEquipped ? 'EQUIPPED' : 'OWNED'}
-      </div>
-    `;
+ const isEquipped = filterCategory === 'buttons' ? equippedButton === key : equippedWallpaper === key;
 
-    if (isEquipped) {
-      const unequipBadge = document.createElement('div');
-      unequipBadge.innerHTML = '✕ Unequip';
-      unequipBadge.style.cssText = 'position:absolute; top:-6px; right:-6px; background:rgba(255,68,68,0.95); color:white; font-size:0.65rem; padding:4px 8px; border-radius:6px; cursor:pointer; font-weight:bold; z-index:10; box-shadow:0 2px 6px rgba(0,0,0,0.5);';
-      unequipBadge.onclick = (e) => {
-        e.stopPropagation();
-        equipDecor(null, filterCategory);
-      };
-      cardEl.appendChild(unequipBadge);
-      cardEl.onclick = () => {};
-    } else {
-      cardEl.onclick = () => equipDecor(key, filterCategory);
-    }
+ const cardEl = document.createElement('div');
+ cardEl.className = 'notion-card';
+ cardEl.style.position = 'relative';
+ cardEl.style.overflow = 'visible';
+ cardEl.style.borderColor = isEquipped ? '#00f0ff' : '#46464f';
+ cardEl.innerHTML = `
+ <img src="${item.image}" style="width:100%; height:60px; object-fit:cover; border-radius:2px; margin-bottom:2px;">
+ <div class="card-name">${item.name}</div>
+ <div class="card-tier-label" style="color: ${isEquipped ? '#00f0ff' : '#adadb8'}">
+ ${isEquipped ? 'EQUIPPED' : 'OWNED'}
+ </div>
+ `;
 
-    grid.appendChild(cardEl);
-  }
+ if (isEquipped) {
+ const unequipBadge = document.createElement('div');
+ unequipBadge.innerHTML = '✕ Unequip';
+ unequipBadge.style.cssText = 'position:absolute; top:-6px; right:-6px; background:rgba(255,68,68,0.95); color:white; font-size:0.65rem; padding:4px 8px; border-radius:6px; cursor:pointer; font-weight:bold; z-index:10; box-shadow:0 2px 6px rgba(0,0,0,0.5);';
+ unequipBadge.onclick = (e) => {
+ e.stopPropagation();
+ equipDecor(null, filterCategory);
+ };
+ cardEl.appendChild(unequipBadge);
+ cardEl.onclick = () => {};
+ } else {
+ cardEl.onclick = () => equipDecor(key, filterCategory);
+ }
 
-  if (!hasItems) {
-    container.innerHTML = `<div style="text-align:center; color:#adadb8; font-size:0.75rem; padding:20px;">No ${filterCategory} crafted yet! Buy blueprints in the Shop and craft them.</div>`;
-  } else {
-    container.appendChild(grid);
-  }
+ grid.appendChild(cardEl);
+ }
+
+ if (!hasItems && filterCategory !== 'buttons') {
+ container.innerHTML = `<div style="text-align:center; color:#adadb8; font-size:0.75rem; padding:20px;">No ${filterCategory} crafted yet! Buy blueprints in the Shop and craft them.</div>`;
+ } else {
+ container.appendChild(grid);
+ }
 }
 
 function equipDecor(key, category = 'decor') {
@@ -1399,25 +1420,35 @@ function equipDecor(key, category = 'decor') {
 }
 
 function applyEquippedWallpaper() {
-  const container = document.querySelector('.container');
-  const clickerBtn = document.getElementById('click-btn');
-  if (!container) return;
+ const container = document.querySelector('.container');
+ const clickerBtn = document.getElementById('click-btn');
+ document.documentElement.style.setProperty('--btn-glow-color', buttonGlowColor);
+ if (!container) return;
 
-  if (equippedWallpaper && GAME_DATA.decor[equippedWallpaper]) {
-    const wallItem = GAME_DATA.decor[equippedWallpaper];
-    container.style.backgroundImage = `url('${wallItem.image}')`;
-    container.style.backgroundSize = 'cover';
-    container.style.backgroundPosition = 'center';
-  } else {
-    container.style.backgroundImage = '';
-  }
+ if (equippedWallpaper && GAME_DATA.decor[equippedWallpaper]) {
+ const wallItem = GAME_DATA.decor[equippedWallpaper];
+ container.style.backgroundImage = `url('${wallItem.image}')`;
+ container.style.backgroundSize = 'cover';
+ container.style.backgroundPosition = 'center';
+ } else {
+ container.style.backgroundImage = '';
+ }
 
-  if (equippedButton && GAME_DATA.decor[equippedButton]) {
-    const btnItem = GAME_DATA.decor[equippedButton];
-    if (clickerBtn) clickerBtn.style.backgroundImage = `url('${btnItem.image}')`;
-  } else {
-    if (clickerBtn) clickerBtn.style.backgroundImage = "url('images/clickerbutton.png')";
-  }
+ if (equippedButton && GAME_DATA.decor[equippedButton]) {
+ const btnItem = GAME_DATA.decor[equippedButton];
+ if (clickerBtn) {
+ clickerBtn.style.backgroundImage = `url('${btnItem.image}')`;
+ clickerBtn.style.backgroundSize = 'contain';
+ const scale = btnItem.scale || 1.0;
+ clickerBtn.style.setProperty('--btn-scale', scale);
+ }
+ } else {
+ if (clickerBtn) {
+ clickerBtn.style.backgroundImage = "url('images/clickerbutton.png')";
+ clickerBtn.style.backgroundSize = 'contain';
+ clickerBtn.style.setProperty('--btn-scale', '1');
+ }
+ }
 }
 
 function equipCard(cardId, tier) {

@@ -89,7 +89,7 @@ body, html {
 .container::after {
   content: "";
   position: absolute;
-  top: 75%;
+  top: 63%;
   left: 50%;
   width: 4px;
   height: 4px;
@@ -166,7 +166,7 @@ body, html {
  padding: 0 4px;
  box-sizing: border-box;
  z-index: 10;
- margin-bottom: -30px; /* Pulls everything below it closer */
+ margin-bottom: -20px; /* Pulls everything below it closer */
 }
 
 .top-tool-btn {
@@ -310,23 +310,24 @@ body, html {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Keep the bouncy physical click transition */
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   user-select: none;
   position: relative;
+  z-index: 5;
   overflow: visible;
   -webkit-tap-highlight-color: transparent;
   outline: none;
+  margin-top: 30px;
+  transform: scale(var(--btn-scale, 1));
 }
 
 .round-clicker-btn:hover:not(:disabled) {
-  transform: scale(1.08);
+  transform: scale(calc(var(--btn-scale, 1) * 1.08));
 }
 
 .round-clicker-btn.is-bouncing {
   animation: buttonBounce 0.15s ease;
 }
-
 
 
 
@@ -340,8 +341,8 @@ body, html {
   right: -4px;
   bottom: -4px;
   border-radius: 50%;
-  box-shadow: 0 0 50px rgba(0, 240, 255, 0.8), 0 0 90px rgba(145, 70, 255, 0.6);
-  filter: blur(8px);
+  box-shadow: 0 0 50px var(--btn-glow-color, rgba(0, 240, 255, 0.2)), 0 0 90px var(--btn-glow-color, rgba(145, 70, 255, 0.01));
+  filter: blur(10px);
   opacity: 0;
   pointer-events: none;
   z-index: -1;
@@ -349,7 +350,7 @@ body, html {
 
 /* Light ring animation */
 .round-clicker-btn.clicked::after {
-  animation: lightFlowOut 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation: lightFlowOut 20.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 @keyframes lightFlowOut {
@@ -361,7 +362,7 @@ body, html {
     opacity: 1;
   }
   100% {
-    transform: scale(1.0);
+    transform: scale(4.0);
     opacity: 0;
   }
 }
@@ -373,9 +374,9 @@ body, html {
 }
 
 @keyframes buttonBounce {
-  0% { transform: scale(1); }
-  50% { transform: scale(0.88); }
-  100% { transform: scale(1); }
+  0% { transform: scale(var(--btn-scale, 1)); }
+  50% { transform: scale(calc(var(--btn-scale, 1) * 0.88)); }
+  100% { transform: scale(var(--btn-scale, 1)); }
 }
 
 .clicker-ripple {
@@ -385,12 +386,13 @@ body, html {
   right: -2px;
   bottom: -2px;
   border-radius: 50%;
-  box-shadow: 0 0 25px rgba(0, 240, 255, 0.9), 0 0 50px rgba(145, 70, 255, 0.7);
+  box-shadow: 0 0 25px var(--btn-glow-color, rgba(0, 240, 255, 0.1)), 0 0 50px var(--btn-glow-color, rgba(145, 70, 255, 0.01));
   filter: blur(6px);
   pointer-events: none;
   z-index: -1;
   animation: lightFlowOut 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
+
 .click-ember-burst {
   position: absolute;
   width: 4px;
@@ -444,6 +446,10 @@ body, html {
   text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
 }
 
+.dock-btn.active .dock-label {
+  color: #00f0ff !important;
+}
+
 .dock-btn:hover {
   color: #ffffff;
   transform: translateY(-2px);
@@ -465,8 +471,8 @@ body, html {
 }
 
 .dock-btn.active .dock-icon {
-  background: rgba(145, 70, 255, 0.3);
-  border: 1px solid rgba(145, 70, 255, 0.5);
+  background:   rgb(205, 177, 247);
+  border: 1px solid rgb(144, 70, 255);
 }
 
 .tab-content {
