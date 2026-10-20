@@ -350,7 +350,7 @@ body, html {
 
 /* Light ring animation */
 .round-clicker-btn.clicked::after {
-  animation: lightFlowOut 20.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation: lightFlowOut 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 @keyframes lightFlowOut {
@@ -362,7 +362,7 @@ body, html {
     opacity: 1;
   }
   100% {
-    transform: scale(4.0);
+    transform: scale(0.8);
     opacity: 0;
   }
 }
@@ -390,7 +390,7 @@ body, html {
   filter: blur(6px);
   pointer-events: none;
   z-index: -1;
-  animation: lightFlowOut 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation: lightFlowOut 0.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 .click-ember-burst {
