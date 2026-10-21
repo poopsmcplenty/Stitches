@@ -512,75 +512,159 @@ window.confirmUnequipCard = function(slotIndex) {
 };
 
 function showCardTooltip(key, tier, mode = 'shop', slotIndex = -1) {
- const tooltip = document.getElementById('global-card-tooltip');
- const tool = GAME_DATA.notions[key];
- const card = tool?.[tier];
- if (!tooltip || !tool || !card) return;
+  const tooltip = document.getElementById('global-card-tooltip');
+  const tool = GAME_DATA.notions[key];
+  const card = tool?.[tier];
+  if (!tooltip || !tool || !card) return;
 
- const cardId = `${key}_${tier}`;
- const craftNames = Object.values(GAME_DATA.craftables).map(c => c.name);
- const timed = tool.Timed || tool.timed || [0, 0];
- const isTimed = timed[0] > 0;
- const timerText = isTimed 
- ? `⏱️ <strong>Active:</strong> ${Math.round(timed[0] / 60)}m | <strong>CD:</strong> ${Math.round(timed[1] / 60)}m<br>`
- : `⏱️ <strong>Type:</strong> Passive (Always On)<br>`;
+  tooltip.style.width = 'fit-content';
+  tooltip.style.maxWidth = '95vw';
+  tooltip.style.boxSizing = 'border-box';
+  tooltip.style.padding = '10px 8px 8px 8px';
 
- let costHTML = "";
- if (mode === 'shop') {
- const costItemsHTML = card.cost
- .map((needed, idx) => {
- if (needed <= 0) return null;
- const itemName = craftNames[idx];
- const owned = craftInventory[Object.keys(GAME_DATA.craftables)[idx]] || 0;
- const isMet = owned >= needed;
+  const cardId = `${key}_${tier}`;
+  const craftNames = Object.values(GAME_DATA.craftables).map(c => c.name);
+  const timed = tool.Timed || tool.timed || [0, 0];
+  const isTimed = timed[0] > 0;
+  
+  const timerText = isTimed 
+    ? `⏱️ <strong>Active:</strong> ${Math.round(timed[0] / 60)}m | <strong>CD:</strong> ${Math.round(timed[1] / 60)}m`
+    : `⏱️ <strong>Type:</strong> Passive`;
 
- return `
- <li class="cost-item ${isMet ? 'met' : 'missing'}">
- <span class="item-name">${itemName}</span>
- <span class="item-amount">${needed} / ${owned}</span>
- </li>
- `;
- })
- .filter(Boolean)
- .join('');
+  const bgImage = tool.image ? `background-image: url('${tool.image}');` : '';
+  const labelColor = tier === 'gold' ? '#ffd700' : tier === 'silver' ? '#e0e0e0' : '#cd7f32';
 
- costHTML = `
- <div class="card-cost-section">
- <div class="cost-header">
- <span>Required</span>
- <span style="font-size: 0.5rem; opacity: 0.8;">Needed/Owned</span>
- </div>
- <ul class="cost-list">
- ${costItemsHTML}
- </ul>
- </div>
- `;
- }
+  let actionButtonText = "Trade for Card";
+  if (tier === 'silver') actionButtonText = "Upgrade your Bronze card to Silver";
+  if (tier === 'gold') actionButtonText = "Upgrade your Silver card to Gold";
 
- let actionBtnHTML = "";
- if (mode === 'shop') {
- actionBtnHTML = `<button class="inspect-action-btn" onclick="confirmBuyCard('${key}', '${tier}')">Trade for Card</button>`;
- } else if (mode === 'inventory') {
- actionBtnHTML = `<button class="inspect-action-btn" onclick="confirmEquipCard('${cardId}', '${tier}')">Equip Card</button>`;
- } else if (mode === 'equipped') {
- actionBtnHTML = `<button class="inspect-action-btn unequip" onclick="confirmUnequipCard(${slotIndex})">Unequip</button>`;
- }
+  let contentHTML = "";
 
- tooltip.innerHTML = `
- <span class="inspect-close-btn" onclick="hideCardTooltip()">✕</span>
- <strong>${tool.name} (${tier.toUpperCase()})</strong><br>
- <em>"${tool.Description || ''}"</em><br><br>
- ⚡ <strong>SPM:</strong> +${card.spm}<br>
- ✨ <strong>Perk:</strong> ${getBonusDescription(card.bonus)}<br>
- ${timerText}
- ${costHTML}
- ${actionBtnHTML}
- `;
- tooltip.style.display = 'block';
- tooltip.classList.remove('card-pop-in');
- void tooltip.offsetWidth;
- tooltip.classList.add('card-pop-in');
+  if (mode === 'shop') {
+    const costItemsHTML = card.cost
+      .map((needed, idx) => {
+        if (needed <= 0) return null;
+        const itemName = craftNames[idx];
+        const owned = craftInventory[Object.keys(GAME_DATA.craftables)[idx]] || 0;
+        const isMet = owned >= needed;
+
+        return `
+          <li class="cost-item ${isMet ? 'met' : 'missing'}">
+            <span class="item-name" style="font-size: 0.75rem;">${itemName}</span>
+            <span class="item-amount" style="font-size: 0.75rem;">${needed} / ${owned}</span>
+          </li>
+        `;
+      })
+      .filter(Boolean)
+      .join('');
+
+    contentHTML = `
+      <div id="tooltip-view-card" style="display: flex; flex-direction: column; align-items: center; width: 210px;">
+        <div class="notion-card ${tier}" style="position: relative; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 10px; width: 210px; height: 280px; ${bgImage} margin: 6px 0 8px 0; border-radius: 8px; box-sizing: border-box;">
+          
+          <div style="position: absolute; top: 142px; left: 10px; right: 10px; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; width: 100%; margin-bottom: 2px;">
+              <div class="card-name" style="font-size: 0.85rem !important; font-weight: bold; line-height: 1.1; text-shadow: 0 1px 2px rgba(0,0,0,0.8); color: #000000;">${tool.name.toUpperCase()}</div>
+              <div class="card-tier-label" style="color: #000000; font-size: 0.75rem !important; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">
+                ${tier.toUpperCase()}
+              </div>
+            </div>
+
+            <div style="font-size: 0.62rem !important; font-style: italic; color: #111111; text-shadow: 0 1px 1px rgba(255,255,255,0.4); text-align: left; line-height: 1.2; width: 100%; margin-bottom: auto; font-weight: 600;">
+              "${tool.Description || ''}"
+            </div>
+
+            <div style="font-size: 0.7rem !important; color: #000000; text-shadow: 0 1px 1px rgba(255,255,255,0.4); text-align: left; line-height: 1.35; width: 100%; margin-top: 18px; font-weight: 600;">
+              ⚡ SPM: +${card.spm}<br>
+              ✨ Perk: ${getBonusDescription(card.bonus)}<br>
+              ${timerText}
+            </div>
+          </div>
+
+        </div>
+        <div style="display: flex; gap: 6px; width: 210px; margin-top: 2px;">
+          <button class="inspect-action-btn" onclick="toggleTooltipView()" style="background: #46464f; flex: 1; padding: 8px 4px; font-size: 0.7rem; font-weight: bold;">Costs 🔄</button>
+          <button class="inspect-action-btn" onclick="confirmBuyCard('${key}', '${tier}')" style="flex: 2; padding: 8px 4px; font-size: 0.7rem; font-weight: bold;">${actionButtonText}</button>
+        </div>
+      </div>
+
+      <div id="tooltip-view-costs" style="display: none; flex-direction: column; width: 210px; min-height: 280px; justify-content: space-between; margin-top: 6px;">
+        <div style="font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; text-align: center; color: #ffffff;">Required Costs</div>
+        <div class="card-cost-section" style="margin-bottom: 10px;">
+          <div class="cost-header">
+            <span style="font-size: 0.7rem;">Required</span>
+            <span style="font-size: 0.65rem; opacity: 0.8;">Needed/Owned</span>
+          </div>
+          <ul class="cost-list" style="max-height: 180px; overflow-y: auto;">
+            ${costItemsHTML}
+          </ul>
+        </div>
+        <div style="display: flex; gap: 6px; width: 210px; margin-top: auto;">
+          <button class="inspect-action-btn" onclick="toggleTooltipView()" style="background: #46464f; flex: 1; padding: 8px 4px; font-size: 0.7rem; font-weight: bold;">Card 🔄</button>
+          <button class="inspect-action-btn" onclick="confirmBuyCard('${key}', '${tier}')" style="flex: 2; padding: 8px 4px; font-size: 0.7rem; font-weight: bold;">${actionButtonText}</button>
+        </div>
+      </div>
+    `;
+  } else {
+    let actionBtnHTML = mode === 'inventory' 
+      ? `<button class="inspect-action-btn" onclick="confirmEquipCard('${cardId}', '${tier}')" style="padding: 10px; font-size: 0.8rem; font-weight: bold; width: 100%;">Equip Card</button>`
+      : `<button class="inspect-action-btn unequip" onclick="confirmUnequipCard(${slotIndex})" style="padding: 10px; font-size: 0.8rem; font-weight: bold; width: 100%;">Unequip</button>`;
+
+    contentHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; width: 210px;">
+        <div class="notion-card ${tier}" style="position: relative; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 10px; width: 210px; height: 280px; ${bgImage} margin: 6px 0 8px 0; border-radius: 8px; box-sizing: border-box;">
+          
+          <div style="position: absolute; top: 142px; left: 10px; right: 10px; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; width: 100%; margin-bottom: 2px;">
+              <div class="card-name" style="font-size: 0.85rem !important; font-weight: bold; line-height: 1.1; text-shadow: 0 1px 2px rgba(0,0,0,0.8); color: #000000;">${tool.name.toUpperCase()}</div>
+              <div class="card-tier-label" style="color: #000000; font-size: 0.75rem !important; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">
+                ${tier.toUpperCase()}
+              </div>
+            </div>
+
+            <div style="font-size: 0.62rem !important; font-style: italic; color: #111111; text-shadow: 0 1px 1px rgba(255,255,255,0.4); text-align: left; line-height: 1.2; width: 100%; margin-bottom: auto; font-weight: 600;">
+              "${tool.Description || ''}"
+            </div>
+
+            <div style="font-size: 0.7rem !important; color: #000000; text-shadow: 0 1px 1px rgba(255,255,255,0.4); text-align: left; line-height: 1.35; width: 100%; margin-top: 18px; font-weight: 600;">
+              ⚡ SPM: +${card.spm}<br>
+              ✨ Perk: ${getBonusDescription(card.bonus)}<br>
+              ${timerText}
+            </div>
+          </div>
+
+        </div>
+        <div style="width: 210px; margin-top: 2px;">
+          ${actionBtnHTML}
+        </div>
+      </div>
+    `;
+  }
+
+  tooltip.innerHTML = `
+    <span class="inspect-close-btn" onclick="hideCardTooltip()" style="position: absolute; top: 6px; right: 8px; font-size: 1.1rem; z-index: 20; cursor: pointer; color: #ffffff;">✕</span>
+    ${contentHTML}
+  `;
+  tooltip.style.display = 'block';
+  tooltip.classList.remove('card-pop-in');
+  void tooltip.offsetWidth;
+  tooltip.classList.add('card-pop-in');
 }
+
+window.toggleTooltipView = function() {
+  const cardView = document.getElementById('tooltip-view-card');
+  const costView = document.getElementById('tooltip-view-costs');
+  if (!cardView || !costView) return;
+
+  const isCardVisible = cardView.style.getPropertyValue('display') !== 'none';
+  if (isCardVisible) {
+    cardView.style.setProperty('display', 'none', 'important');
+    costView.style.setProperty('display', 'flex', 'important');
+  } else {
+    cardView.style.setProperty('display', 'flex', 'important');
+    costView.style.setProperty('display', 'none', 'important');
+  }
+};
 
 function hideCardTooltip() {
  const tooltip = document.getElementById('global-card-tooltip');
@@ -595,45 +679,71 @@ function hideCardTooltip() {
 }
 
 function renderShopNotions() {
- const container = document.getElementById('shop-notions-container');
- const tooltip = document.getElementById('global-card-tooltip');
- if (!container || !tooltip) return;
- container.innerHTML = '';
+  const container = document.getElementById('shop-notions-container');
+  const tooltip = document.getElementById('global-card-tooltip');
+  if (!container || !tooltip) return;
+  container.innerHTML = '';
 
- const craftNames = ["Coasters", "Std Bowls", "Rainbowls", "Large Bowls", "Fabrics"];
+  const buyItems = [];
+  const upgradeItems = [];
 
- for (const [key, tool] of Object.entries(GAME_DATA.notions)) {
- ['bronze', 'silver', 'gold'].forEach(tier => {
- const card = tool[tier];
- if (!card) return;
- const bgImage = tool.image ? `background-image: url('${tool.image}');` : '';
- const cardId = `${key}_${tier}`;
- const maxLimit = 1;
- const currentOwned = craftInventory[cardId] || 0;
- const isMaxed = currentOwned >= maxLimit;
+  for (const [key, tool] of Object.entries(GAME_DATA.notions)) {
+    const hasBronze = (craftInventory[`${key}_bronze`] || craftInventory[`${key}_Bronze`] || 0) > 0;
+    const hasSilver = (craftInventory[`${key}_silver`] || craftInventory[`${key}_Silver`] || 0) > 0;
+    const hasGold = (craftInventory[`${key}_gold`] || craftInventory[`${key}_Gold`] || 0) > 0;
 
- const el = document.createElement('div');
- el.className = `notion-card ${tier}`;
- el.style.cssText = `position: relative; ${bgImage}`;
+    // 1. BUY logic: Show Bronze if unowned (unless player already owns all 3 tiers)
+    if (!hasBronze && !(hasSilver && hasGold)) {
+      buyItems.push({ key, tool, targetTier: 'bronze', labelText: 'BUY' });
+    }
 
- if (isMaxed) {
- el.style.opacity = '0.35';
- el.style.pointerEvents = 'none';
- el.style.cursor = 'not-allowed';
- } else {
- el.onclick = () => showCardTooltip(key, tier, 'shop');
- }
+    // 2. UPGRADE logic: Prioritize Silver upgrade first, then Gold upgrade
+    if (hasBronze && !hasSilver) {
+      upgradeItems.push({ key, tool, targetTier: 'silver', labelText: 'UPGRADE' });
+    } else if (hasSilver && !hasGold) {
+      upgradeItems.push({ key, tool, targetTier: 'gold', labelText: 'UPGRADE' });
+    }
+  }
 
- el.innerHTML = `
- <div class="card-name" style="margin-top: auto; margin-bottom: 2px; font-size: 0.55rem; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">${tool.name}</div>
- <div class="card-tier-label" style="color: ${tier === 'gold' ? '#ffd700' : tier === 'silver' ? '#c0c0c0' : '#cd7f32'}; margin-bottom: 4px; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">
- ${isMaxed ? 'MAX OWNED' : tier}
- </div>
- `;
- el.onclick = () => showCardTooltip(key, tier, 'shop');
- container.appendChild(el);
- });
- }
+  const createCardElement = ({ key, tool, targetTier, labelText }) => {
+    const card = tool[targetTier];
+    if (!card) return null;
+
+    const bgImage = tool.image ? `background-image: url('${tool.image}');` : '';
+    const el = document.createElement('div');
+    el.className = `notion-card ${targetTier}`;
+    el.style.cssText = `position: relative; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 6px; ${bgImage}`;
+
+    const labelColor = targetTier === 'gold' ? '#7f0202' : targetTier === 'silver' ? '#7f0202' : '#cd7f32';
+
+    el.innerHTML = `
+      <div class="card-name" style="margin-top: auto; font-size: 0.75rem !important; font-weight: bold; line-height: 1.1; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">${tool.name}</div>
+      <div class="card-tier-label" style="color: ${labelColor}; font-size: 0.65rem !important; margin-bottom: 2px; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">
+        ${labelText}
+      </div>
+    `;
+    el.onclick = () => showCardTooltip(key, targetTier, 'shop');
+    return el;
+  };
+
+  // Render BUY section
+  buyItems.forEach(item => {
+    const el = createCardElement(item);
+    if (el) container.appendChild(el);
+  });
+
+  // Dividing line if both BUY and UPGRADE items exist
+  if (buyItems.length > 0 && upgradeItems.length > 0) {
+    const divider = document.createElement('hr');
+    divider.style.cssText = 'grid-column: 1 / -1; width: 100%; border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 6px 0;';
+    container.appendChild(divider);
+  }
+
+  // Render UPGRADE section
+  upgradeItems.forEach(item => {
+    const el = createCardElement(item);
+    if (el) container.appendChild(el);
+  });
 }
 
 function renderShopBlueprints() {
@@ -731,12 +841,27 @@ function buyNotionCard(key, tier) {
  if (!card) return;
 
  const cardId = `${key}_${tier}`;
- const maxLimit = 1;
  const currentOwned = craftInventory[cardId] || 0;
 
- if (currentOwned >= maxLimit) {
- showNotify(`Max ${tier.toUpperCase()} ${GAME_DATA.notions[key].name} already owned (${maxLimit}/${maxLimit})!`, true);
+ if (currentOwned >= 1) {
+ showNotify(`Already own ${tier.toUpperCase()} ${GAME_DATA.notions[key].name}!`, true);
  return;
+ }
+
+ // Enforce upgrade path requirement & track previous tier for removal
+ let previousCardId = null;
+ if (tier === 'silver') {
+ previousCardId = `${key}_bronze`;
+ if ((craftInventory[previousCardId] || 0) < 1) {
+ showNotify("Must own Bronze tier first!", true);
+ return;
+ }
+ } else if (tier === 'gold') {
+ previousCardId = `${key}_silver`;
+ if ((craftInventory[previousCardId] || 0) < 1) {
+ showNotify("Must own Silver tier first!", true);
+ return;
+ }
  }
 
  const [c0, c1, c2, c3, c4] = card.cost;
@@ -750,9 +875,13 @@ function buyNotionCard(key, tier) {
  c.fabric = (c.fabric || 0) - c4;
  ropeBowlsCount = c.stdBowl;
 
- craftInventory[cardId] = currentOwned + 1;
+ // Consume the previous tier upon upgrade, and add the new tier
+ if (previousCardId && craftInventory[previousCardId]) {
+ delete craftInventory[previousCardId];
+ }
+ craftInventory[cardId] = 1;
 
- showNotify(`Traded for ${GAME_DATA.notions[key].name} (${tier.toUpperCase()})!`);
+ showNotify(`Upgraded to ${GAME_DATA.notions[key].name} (${tier.toUpperCase()})!`);
  updateUI();
  renderShopNotions();
  saveUserData();
