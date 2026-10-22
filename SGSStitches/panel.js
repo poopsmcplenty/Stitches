@@ -322,9 +322,6 @@ let passiveInterval = null;
 let saveInterval = null;
 
 function startPassiveLoop() {
- if (document.getElementById('tab-notions')?.style.display === 'block') {
- renderNotionsTab();
- }
  if (passiveInterval) clearInterval(passiveInterval);
  passiveInterval = setInterval(() => {
  if (!gameStarted) return;
@@ -333,6 +330,9 @@ function startPassiveLoop() {
  totalPointsEarned += spm;
  updateUI();
 
+ // Refresh notions tab UI every second so timers/progress bars update live
+ renderNotionsTab();
+
  const slotElements = document.querySelectorAll('.slots-grid .slot');
  equippedSlots.forEach((cardId, index) => {
  if (!cardId) return;
@@ -340,7 +340,7 @@ function startPassiveLoop() {
  const tool = GAME_DATA.notions[key];
  const card = tool?.[tier];
  
- if (card && card.spm && isCardActive(cardId) && slotElements[index]) {
+if (card && card.spm && isCardActive(cardId) && slotElements[index]) {
  spawnCardFloatingSPM(slotElements[index], card.spm);
  }
 
@@ -348,8 +348,6 @@ function startPassiveLoop() {
  if (timed[0] > 0) {
  const timer = cardTimers[cardId];
  const now = Date.now();
- 
- // If no timer exists or cooldown/active cycle has completed, loop it automatically
  if (!timer || now >= timer.readyAt) {
  activateTimedCard(cardId, timed);
  }
