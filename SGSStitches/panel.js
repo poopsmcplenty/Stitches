@@ -335,18 +335,21 @@ function startPassiveLoop() {
 
  const slotElements = document.querySelectorAll('.slots-grid .slot');
  equippedSlots.forEach((cardId, index) => {
- if (!cardId || !isCardActive(cardId)) return;
+ if (!cardId) return;
  const [key, tier] = cardId.split('_');
- const card = GAME_DATA.notions[key]?.[tier];
- if (card && card.spm && slotElements[index]) {
+ const tool = GAME_DATA.notions[key];
+ const card = tool?.[tier];
+ 
+ if (card && card.spm && isCardActive(cardId) && slotElements[index]) {
  spawnCardFloatingSPM(slotElements[index], card.spm);
  }
 
- const tool = GAME_DATA.notions[key];
  const timed = tool?.Timed || tool?.timed || [0, 0];
  if (timed[0] > 0) {
  const timer = cardTimers[cardId];
  const now = Date.now();
+ 
+ // If no timer exists or cooldown/active cycle has completed, loop it automatically
  if (!timer || now >= timer.readyAt) {
  activateTimedCard(cardId, timed);
  }
@@ -535,8 +538,8 @@ function showCardTooltip(key, tier, mode = 'shop', slotIndex = -1) {
   const labelColor = tier === 'gold' ? '#ffd700' : tier === 'silver' ? '#e0e0e0' : '#cd7f32';
 
   let actionButtonText = "Trade for Card";
-  if (tier === 'silver') actionButtonText = "Upgrade your Bronze card to Silver";
-  if (tier === 'gold') actionButtonText = "Upgrade your Silver card to Gold";
+  if (tier === 'silver') actionButtonText = "Upgrade Bronze to Silver";
+  if (tier === 'gold') actionButtonText = "Upgrade Silver to Gold";
 
   let contentHTML = "";
 
@@ -562,19 +565,19 @@ function showCardTooltip(key, tier, mode = 'shop', slotIndex = -1) {
       <div id="tooltip-view-card" style="display: flex; flex-direction: column; align-items: center; width: 210px;">
         <div class="notion-card ${tier}" style="position: relative; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 10px; width: 210px; height: 280px; ${bgImage} margin: 6px 0 8px 0; border-radius: 8px; box-sizing: border-box;">
           
-          <div style="position: absolute; top: 142px; left: 10px; right: 10px; display: flex; flex-direction: column;">
+          <div style="position: absolute; top: 145px; left: 10px; right: 10px; display: flex; flex-direction: column;">
             <div style="display: flex; justify-content: space-between; align-items: baseline; width: 100%; margin-bottom: 2px;">
               <div class="card-name" style="font-size: 0.85rem !important; font-weight: bold; line-height: 1.1; text-shadow: 0 1px 2px rgba(0,0,0,0.8); color: #000000;">${tool.name.toUpperCase()}</div>
-              <div class="card-tier-label" style="color: #000000; font-size: 0.75rem !important; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">
+              <div class="card-tier-label" style="color: ${labelColor}; font-size: 0.7rem !important; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.8); margin-left: 4px;">
                 ${tier.toUpperCase()}
               </div>
             </div>
 
-            <div style="font-size: 0.62rem !important; font-style: italic; color: #111111; text-shadow: 0 1px 1px rgba(255,255,255,0.4); text-align: left; line-height: 1.2; width: 100%; margin-bottom: auto; font-weight: 600;">
+            <div style="font-size: 0.60rem !important; font-style: italic; color: #111111; text-shadow: 0 1px 1px rgba(255,255,255,0.4); text-align: left; line-height: 1.2; width: 100%; margin-bottom: auto; font-weight: 600;">
               "${tool.Description || ''}"
             </div>
 
-            <div style="font-size: 0.7rem !important; color: #000000; text-shadow: 0 1px 1px rgba(255,255,255,0.4); text-align: left; line-height: 1.35; width: 100%; margin-top: 18px; font-weight: 600;">
+            <div style="font-size: 0.68rem !important; color: #000000; text-shadow: 0 1px 1px rgba(255,255,255,0.4); text-align: left; line-height: 1.3; width: 100%; margin-top: 24px; font-weight: 600;">
               ⚡ SPM: +${card.spm}<br>
               ✨ Perk: ${getBonusDescription(card.bonus)}<br>
               ${timerText}
@@ -614,19 +617,19 @@ function showCardTooltip(key, tier, mode = 'shop', slotIndex = -1) {
       <div style="display: flex; flex-direction: column; align-items: center; width: 210px;">
         <div class="notion-card ${tier}" style="position: relative; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 10px; width: 210px; height: 280px; ${bgImage} margin: 6px 0 8px 0; border-radius: 8px; box-sizing: border-box;">
           
-          <div style="position: absolute; top: 142px; left: 10px; right: 10px; display: flex; flex-direction: column;">
+          <div style="position: absolute; top: 145px; left: 10px; right: 10px; display: flex; flex-direction: column;">
             <div style="display: flex; justify-content: space-between; align-items: baseline; width: 100%; margin-bottom: 2px;">
               <div class="card-name" style="font-size: 0.85rem !important; font-weight: bold; line-height: 1.1; text-shadow: 0 1px 2px rgba(0,0,0,0.8); color: #000000;">${tool.name.toUpperCase()}</div>
-              <div class="card-tier-label" style="color: #000000; font-size: 0.75rem !important; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">
+              <div class="card-tier-label" style="color: ${labelColor}; font-size: 0.7rem !important; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.8); margin-left: 4px;">
                 ${tier.toUpperCase()}
               </div>
             </div>
 
-            <div style="font-size: 0.62rem !important; font-style: italic; color: #111111; text-shadow: 0 1px 1px rgba(255,255,255,0.4); text-align: left; line-height: 1.2; width: 100%; margin-bottom: auto; font-weight: 600;">
+            <div style="font-size: 0.60rem !important; font-style: italic; color: #111111; text-shadow: 0 1px 1px rgba(255,255,255,0.4); text-align: left; line-height: 1.2; width: 100%; margin-bottom: auto; font-weight: 600;">
               "${tool.Description || ''}"
             </div>
 
-            <div style="font-size: 0.7rem !important; color: #000000; text-shadow: 0 1px 1px rgba(255,255,255,0.4); text-align: left; line-height: 1.35; width: 100%; margin-top: 18px; font-weight: 600;">
+            <div style="font-size: 0.68rem !important; color: #000000; text-shadow: 0 1px 1px rgba(255,255,255,0.4); text-align: left; line-height: 1.3; width: 100%; margin-top: 24px; font-weight: 600;">
               ⚡ SPM: +${card.spm}<br>
               ✨ Perk: ${getBonusDescription(card.bonus)}<br>
               ${timerText}
@@ -848,17 +851,18 @@ function buyNotionCard(key, tier) {
  return;
  }
 
- // Enforce upgrade path requirement & track previous tier for removal
- let previousCardId = null;
+ // Enforce upgrade path requirement
+ let oldTier = null;
  if (tier === 'silver') {
- previousCardId = `${key}_bronze`;
- if ((craftInventory[previousCardId] || 0) < 1) {
+ oldTier = 'bronze';
+ if ((craftInventory[`${key}_bronze`] || 0) < 1) {
  showNotify("Must own Bronze tier first!", true);
  return;
  }
- } else if (tier === 'gold') {
- previousCardId = `${key}_silver`;
- if ((craftInventory[previousCardId] || 0) < 1) {
+ }
+ if (tier === 'gold') {
+ oldTier = 'silver';
+ if ((craftInventory[`${key}_silver`] || 0) < 1) {
  showNotify("Must own Silver tier first!", true);
  return;
  }
@@ -875,15 +879,18 @@ function buyNotionCard(key, tier) {
  c.fabric = (c.fabric || 0) - c4;
  ropeBowlsCount = c.stdBowl;
 
- // Consume the previous tier upon upgrade, and add the new tier
- if (previousCardId && craftInventory[previousCardId]) {
- delete craftInventory[previousCardId];
- }
  craftInventory[cardId] = 1;
+
+ // Automatically unequip old tier if it was active in slots
+ if (oldTier) {
+ const oldCardId = `${key}_${oldTier}`;
+ equippedSlots = equippedSlots.map(slotId => (slotId === oldCardId ? null : slotId));
+ }
 
  showNotify(`Upgraded to ${GAME_DATA.notions[key].name} (${tier.toUpperCase()})!`);
  updateUI();
  renderShopNotions();
+ renderNotionsTab();
  saveUserData();
  } else {
  showNotify("Missing required crafted items!", true);
@@ -1622,29 +1629,34 @@ function equipCard(cardId, tier) {
  if (equippedSlots[3] === null) targetSlot = 3;
  }
 
- if (targetSlot !== -1) {
- equippedSlots[targetSlot] = cardId;
- 
- const timed = tool?.Timed || tool?.timed || [0, 0];
- const isTimed = timed[0] > 0;
- const timer = cardTimers[cardId];
- const now = Date.now();
- const isCooldown = timer && now < timer.readyAt;
+if (targetSlot !== -1) {
+    equippedSlots[targetSlot] = cardId;
+    
+    const timed = tool?.Timed || tool?.timed || [0, 0];
+    const isTimed = timed[0] > 0;
+    const timer = cardTimers[cardId];
+    const now = Date.now();
 
- if (isTimed && !isCooldown) {
- activateTimedCard(cardId, timed);
- } else {
- showNotify(`Equipped to Slot ${targetSlot + 1}!`);
- }
+    if (isTimed) {
+      // If it has no timer yet, or its previous cooldown has already expired, start fresh.
+      // Otherwise, keep its existing progress so it doesn't cheese the cooldown by re-equipping!
+      if (!timer || now >= timer.readyAt) {
+        activateTimedCard(cardId, timed);
+      } else {
+        showNotify(`Equipped to Slot ${targetSlot + 1}!`);
+      }
+    } else {
+      showNotify(`Equipped to Slot ${targetSlot + 1}!`);
+    }
 
- updateUI();
- renderNotionsTab();
- renderCrafting();
- renderShop();
- saveUserData();
- } else {
- showNotify(`No valid empty slot for ${tier.toUpperCase()} card!`, true);
- }
+    updateUI();
+    renderNotionsTab();
+    renderCrafting();
+    renderShop();
+    saveUserData();
+  } else {
+    showNotify(`No valid empty slot for ${tier.toUpperCase()} card!`, true);
+  }
 }
 
 function unequipCard(slotIndex) {
